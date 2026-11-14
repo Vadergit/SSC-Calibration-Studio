@@ -13,7 +13,7 @@
 ## Implementation checklist
 
 - [ ] Confirm supported device variants, supply voltages, wiring and communication interface.
-- [ ] Implement and test transport using an affordable USB-connected microcontroller.
+- [ ] Implement and test transport using both the original manufacturer calibration/evaluation board (where available) and an affordable USB-connected microcontroller bridge; track support for each hardware option.
 - [ ] Read device identification, configuration and raw measurement data where supported.
 - [ ] Implement settings write, calibration and nonvolatile programming where supported.
 - [ ] Validate the calibration with reference measurements and verify stored values.
