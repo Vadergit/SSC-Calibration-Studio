@@ -2,7 +2,7 @@
 
 **Universal, open-source calibration software for Sensor Signal Conditioners (SSCs).**
 
-The goal is a single browser-based application for configuring, calibrating, programming and logging **pressure-sensor SSCs from different manufacturers**, using affordable Arduino-compatible microcontrollers as communication bridges wherever technically feasible.
+The goal is a single browser-based application for configuring, calibrating, programming and logging **pressure-sensor SSCs from different manufacturers**, supporting **both original manufacturer calibration/evaluation boards** and affordable Arduino-/ESP32-compatible microcontrollers as communication interfaces.
 
 The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App) is the starting point for the shared user interface and calibration workflow.
 
@@ -24,9 +24,9 @@ Select a **manufacturer** to open its detailed SSC lists, communication groups, 
 
 ## Planned workflow
 
-**Connect USB bridge → Select SSC → Read configuration and raw values → Calibrate → Program → Verify → Log / export**
+**Connect a supported original calibration board or universal USB bridge → Select SSC → Read configuration and raw values → Calibrate → Program → Verify → Log / export**
 
-The application will provide a common interface with device-specific drivers for register access, communication and calibration methods. Digital measurement readout is preferred where available; precision calibration may still require external reference measurements.
+The application will use **interchangeable hardware adapters** for original manufacturer boards and the open-source microcontroller firmware, plus device-specific drivers for register access, communication and calibration methods. Digital measurement readout is preferred where available; precision calibration may still require external reference measurements.
 
 **[Full development roadmap and task checklist](docs/development-roadmap.md)** · **[Microcontroller firmware, native USB boards and communication protocols](docs/firmware-and-hardware.md)**
 
