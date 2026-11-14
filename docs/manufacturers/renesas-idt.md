@@ -6,7 +6,7 @@
 
 ## Supported device families
 
-**Common communication hardware:** [Renesas SSC Communication Board (SSC-CB)](https://www.renesas.com/en/design-resources/boards-kits/ssc-cb). Renesas lists SSC-CB as a shared module in several SSC evaluation kits, including those for ZSC31014, ZSC31015, ZSC31050 and ZSC31150. **The aim of this project is to replace the proprietary communication board with a low-cost microcontroller, not to require the original board.** Individual chip boards, pinouts, voltage levels and command sets still need verification.
+**Common communication hardware:** [Renesas SSC Communication Board (SSC-CB)](https://www.renesas.com/en/design-resources/boards-kits/ssc-cb). Renesas lists SSC-CB as a shared module in several SSC evaluation kits, including those for ZSC31014, ZSC31015, ZSC31050 and ZSC31150. **The goal is to support the original SSC-CB alongside an affordable microcontroller alternative, with the same web interface.** Individual chip boards, pinouts, voltage levels and command sets still need verification.
 
 - [ ] **Renesas/IDT platform group complete** (all protocol subgroups below implemented and verified)
 
@@ -44,7 +44,7 @@ These parts are suitable for bridge/pressure measurement but **are not yet confi
 ## Implementation checklist
 
 - [ ] Confirm supported device variants, supply voltages, wiring and communication interface.
-- [ ] Implement and test transport using an affordable USB-connected microcontroller.
+- [ ] Implement and test transport using both the original manufacturer calibration/evaluation board (where available) and an affordable USB-connected microcontroller bridge; track support for each hardware option.
 - [ ] Read device identification, configuration and raw measurement data where supported.
 - [ ] Implement settings write, calibration and nonvolatile programming where supported.
 - [ ] Validate the calibration with reference measurements and verify stored values.
