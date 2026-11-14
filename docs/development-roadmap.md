@@ -19,7 +19,7 @@ The Elmos E703.11 web application is the starting point for UI and workflow reus
 - **Common web UI:** connection, device selection, configuration, calibration, diagnostics, charts and logging.
 - **Device drivers:** manufacturer/model-specific register maps, commands and calibration algorithms.
 - **Transport adapters:** I²C, SPI, one-wire/OWI/ZACwire, SENT/LIN where applicable and feasible.
-- **Microcontroller bridge:** affordable device providing communication with the SSC; the web app remains responsible for calibration workflow and orchestration.
+- **Microcontroller bridge:** affordable, interchangeable Arduino-compatible/ESP32/other microcontroller firmware with native USB preference, hardware-level protocol modules and timing-critical communication; the web app remains responsible for calibration workflow and orchestration. See [universal firmware and hardware requirements](firmware-and-hardware.md).
 
 ## Shared development checklist
 
@@ -27,6 +27,7 @@ The Elmos E703.11 web application is the starting point for UI and workflow reus
 - [ ] Define a common SSC driver API (identify, connect, read, write, calibrate, validate, log)
 - [ ] Define microcontroller-to-browser communication protocol (USB / Web Serial, where supported)
 - [ ] Implement reusable I²C, SPI and one-wire/ZACwire transport adapters as required
+- [ ] Develop and test universal microcontroller firmware for selected native-USB boards (see [firmware checklist](firmware-and-hardware.md#firmware-development-checklist))
 - [ ] Add device profiles for register maps, output modes and calibration algorithms
 - [ ] Add raw/corrected measurement logging and export
 - [ ] Document wiring, voltage requirements, hardware safety and device-specific limitations
