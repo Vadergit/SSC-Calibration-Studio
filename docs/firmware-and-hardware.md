@@ -1,14 +1,28 @@
-# Universal microcontroller firmware and hardware
+# Supported hardware and universal microcontroller firmware
 
 [← Project overview](../README.md) · [← Development roadmap](development-roadmap.md)
 
 ## Goal
 
-Develop **one reusable, open-source microcontroller firmware** that acts as a universal USB-to-SSC interface. It should be portable across suitable Arduino-compatible boards, ESP32 variants and other small microcontrollers, rather than being tied to one manufacturer's evaluation board.
+Support **both original manufacturer calibration/evaluation boards and one reusable, open-source microcontroller firmware** as interchangeable interfaces between the web application and supported SSCs. The universal firmware should be portable across suitable Arduino-compatible boards, ESP32 variants and other small microcontrollers.
 
-The **web application** owns the user interface, SSC selection, calibration workflow, calculations, configuration profiles and logging/exports. The **microcontroller firmware** provides electrical communication, protocol transport, reliable timing, acquisition and error reporting. Where strict device timing requires local actions, those actions run inside firmware. The microcontroller is not intended to duplicate the full calibration application.
+The **web application** owns the user interface, SSC selection, calibration workflow, calculations, configuration profiles and logging/exports. A **hardware-adapter layer** communicates either with an original manufacturer board or with the universal microcontroller firmware. The **microcontroller firmware** provides electrical communication, protocol transport, reliable timing, acquisition and error reporting. Where strict device timing requires local actions, those actions run inside firmware. The microcontroller is not intended to duplicate the full calibration application.
 
-The ambition is to cover **all interfaces required by the supported SSCs**, not to claim every microcontroller can implement every protocol simultaneously or without extra circuitry.
+The ambition is to cover **all interfaces required by supported SSCs** through suitable hardware adapters, not to claim every board can implement every protocol or every original board is already compatible.
+
+## Original manufacturer calibration / evaluation boards
+
+**Original manufacturer boards are a first-class supported hardware target, not something users must replace.** Users who already own such a board should be able to connect it to the same web application and use the relevant calibration features after its adapter has been implemented and verified.
+
+| Manufacturer | Original hardware candidate | Integration status |
+| --- | --- | --- |
+| Elmos | E703.11 / SSP3 evaluation and communication hardware (exact interface/version to confirm) | Planned; existing standalone Elmos web application is the reference |
+| Renesas / IDT | SSC Communication Board (SSC-CB), with matching sensor-specific evaluation board | Planned; verify each supported chip family |
+| TI, Melexis, NOVOSENSE, Jiuhao and ADI/Maxim | Manufacturer-specific evaluation/programming hardware, to be identified and validated | Research / planned |
+
+Integrate original boards through their available host interfaces (for example USB CDC/serial, USB HID or vendor-specific USB). **Web Serial, WebUSB and WebHID are alternatives only where the browser and device permit access**; if a board requires proprietary drivers or cannot be accessed from a browser, investigate a separately installed local bridge/adapter. Do not assume that every vendor board can be driven directly by the browser. The project should not flash or overwrite the original board firmware as a prerequisite.
+
+The hardware adapter should expose common operations (connect, identify, capabilities, read, write, execute, stream samples and report errors) and indicate which SSCs, voltages and commands a connected board supports. Keep **verification status per SSC + hardware adapter combination**, because working on one board does not prove support on every other board.
 
 ## Candidate microcontroller platforms
 
@@ -44,23 +58,35 @@ Protocol support is modular; an SSC-specific profile selects the correct physica
 
 ```text
 Web application (browser)
-  ├─ Common UI, logging and calibration workflow
-  ├─ Manufacturer / chip profiles and high-level commands
-  └─ USB (initially Web Serial + USB CDC when supported)
+  ├─ Common UI, logging, calibration and SSC profiles
+  └─ Common hardware adapter API
+       ├─ Original manufacturer board adapter
+       │    └─ Manufacturer board over supported USB interface
+       │         (or local bridge if required)
        │
-       ▼
-Universal microcontroller firmware
-  ├─ Versioned USB command API and device capabilities
-  ├─ I²C / SPI / UART modules
-  ├─ One-wire / OWI / SWI / ZACwire timing engines
-  ├─ Optional SENT / LIN / PWM capture modules
-  └─ GPIO, voltage control and measurement peripherals
+       └─ Universal USB bridge adapter
+            └─ Arduino / ESP32 / RP2040 firmware
+                 ├─ I²C / SPI / UART transport
+                 ├─ OWI / SWI / ZACwire timing engines
+                 └─ Optional SENT / LIN / measurement modules
        │
        ▼
 Selected SSC and sensor
 ```
 
-The browser must not generate timing-critical bus edges directly. Firmware should execute time-critical operations, timestamp samples when needed and buffer data before sending it to the application. The web app should remain independent of the particular board and reveal only features supported by that firmware/board.
+The browser must not generate timing-critical bus edges directly. Firmware should execute time-critical operations, timestamp samples when needed and buffer data before sending it to the application. The web app should remain independent of the particular board and reveal only features supported by the selected **original manufacturer board or universal firmware**.
+
+## Original board integration checklist
+
+- [ ] Inventory the original calibration/evaluation board models and firmware revisions to support per manufacturer.
+- [ ] Identify available host USB interfaces, drivers, pinouts, voltage requirements and supported SSC families.
+- [ ] Define a consistent hardware-adapter API with identification, capabilities and error handling.
+- [ ] Build an adapter for the existing Elmos evaluation hardware.
+- [ ] Build an adapter for the Renesas / IDT SSC-CB and verify supported family variants.
+- [ ] Evaluate other manufacturer board adapters as device families are added.
+- [ ] Verify read, write, configuration, calibration and data logging with actual SSCs on original hardware.
+- [ ] Show confirmed SSC × board compatibility and limitations in the web application.
+- [ ] Keep existing manufacturer board firmware unchanged unless a separate supported update path is explicitly required.
 
 ## Firmware development checklist
 
@@ -83,4 +109,4 @@ The browser must not generate timing-critical bus edges directly. Firmware shoul
 
 ## Target outcome
 
-A user can choose a supported microcontroller, connect it through USB, select an SSC inside the web application and use the **same web workflow** to communicate, calibrate and log data. Hardware-specific pin and protocol limitations are shown in the UI rather than requiring a separate application for every board.
+A user can connect **either a supported original manufacturer calibration board or a supported universal microcontroller bridge**, choose an SSC in the web application and use the **same web workflow** to communicate, calibrate and log data. Board-specific capabilities and limitations are shown in the UI, without needing a separate calibration application for every hardware platform.
