@@ -65,6 +65,63 @@ These devices can share parts of the B1/B2 transport layers while retaining indi
 
 **Planned additions:** other widely used Renesas / IDT and third-party SSCs will be researched and added to a suitable verified platform and protocol group. The above is an initial candidate list, not a claim of implemented support or verified protocol-level compatibility.
 
+
+### Platform C — NOVOSENSE pressure sensor SSCs
+
+Official references: [NOVOSENSE pressure SSC product selection guide (2025)](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf). All devices below are **pressure-sensor-relevant SSC candidates**, not yet implemented. Common transport code may be reused, but command compatibility and evaluation-board grouping must be verified on a per-family basis.
+
+- [ ] **NOVOSENSE platform complete**
+  - [ ] **C1 — Piezoresistive / Wheatstone bridge, digital and analog outputs**
+    - [ ] **NSA2200** — I²C / SPI; OTP; low-cost digital-output bridge conditioner. [Manufacturer catalogue](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf)
+    - [ ] **NSA2300** — I²C / SPI / OWI; OTP; analog and digital outputs. [Manufacturer catalogue](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf)
+    - [ ] **NSA2302** — I²C / SPI / OWI; rewritable EEPROM; analog and digital outputs. [Manufacturer catalogue](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf)
+  - [ ] **C2 — Industrial pressure transmitters**
+    - [ ] **NSA2860 / NSA2860X** — resistive bridge; I²C / SPI / OWI; 4–20 mA and voltage outputs. [NSA2860X datasheet](https://www.novosns.com/Public/Uploads/uploadfile/files/20240115/NSA2860X_Datasheet_Rev1.4_EN-843.pdf)
+    - [ ] **NSC2860X** — capacitive pressure sensor interface; industrial transmitter. [Manufacturer catalogue](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf)
+  - [ ] **C3 — Automotive analog pressure SSCs**
+    - [ ] **NSA9260 / NSA9260X** — resistive bridge; analog output / OWI. [Manufacturer catalogue](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf)
+    - [ ] **NSC9260 / NSC9260X** — capacitive pressure input; analog output / OWI. [NSC9260X datasheet](https://www.novosns.com/Public/Uploads/uploadfile/files/20231228/NSC9260X_Datasheet_EN_1.3.pdf)
+  - [ ] **C4 — Automotive digital-output pressure SSCs**
+    - [ ] **NSC9262** — capacitive pressure input; LIN interface. [Manufacturer catalogue](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf)
+    - [ ] **NSC9264** — capacitive pressure input; SENT interface. [Manufacturer catalogue](https://www.novosns.com/Public/Uploads/uploadfile3/files/20250427/NOVOSENSE_Product_Selection_Guide_EN_202504.pdf)
+
+### Platform D — Texas Instruments pressure / bridge sensor conditioners
+
+Official manufacturer pages include datasheet downloads. Grouping into reusable calibration-driver families is **to be determined by communication and calibration protocol**, rather than assuming all TI devices work with the same evaluation board.
+
+- [ ] **TI platform complete**
+  - [ ] **PGA309** — programmable bridge conditioner; one-wire programming, external EEPROM; [Product and datasheet](https://www.ti.com/product/PGA309)
+  - [ ] **PGA300** — integrated pressure transmitter conditioner; 4–20 mA; [Product and datasheet](https://www.ti.com/product/PGA300)
+  - [ ] **PGA302** — pressure/bridge conditioner; I²C and one-wire over supply line; [Product and datasheet](https://www.ti.com/product/PGA302)
+  - [ ] **PGA305** — pressure sensor signal conditioner and transmitter; I²C / OWI; [Product and datasheet](https://www.ti.com/product/PGA305)
+
+### Platform E — Melexis automotive pressure interfaces
+
+- [ ] **Melexis platform complete** (evaluate shared PTC-04 programmer ecosystem, device-specific interfaces)
+  - [ ] **MLX90328** — resistive bridge pressure sensor; analog output, single-wire programming; [Product / datasheet](https://www.melexis.com/en/product/mlx90328/automotive-pressure-sensor-interface-analog-output)
+  - [ ] **MLX90329** — resistive bridge pressure sensor; SENT output; [Product / datasheet](https://www.melexis.com/en/product/MLX90329/Automotive-Pressure-Sensor-Interface-SENT-Output)
+
+### Platform F — Analog Devices / Maxim
+
+- [ ] **ADI/Maxim platform complete**
+  - [ ] **MAX1454** — programmable precision sensor signal conditioner for automotive bridge sensors; single-pin programming; [Product / datasheet](https://www.analog.com/en/products/max1454.html)
+
+Additional older MAX1452/MAX1455 devices are research candidates only; review their lifecycle and documentation before adding them to the active implementation roadmap.
+
+### Additional Renesas / IDT candidates
+
+These parts are suitable for bridge/pressure measurement but **are not yet confirmed to share the programming commands of Platform B**. Group further by actual communication-board hardware and device protocol after validation.
+
+- [ ] **ZSSC3154** — resistive bridge automotive SSC; [Product / datasheet](https://www.renesas.com/en/products/zssc3154)
+- [ ] **ZSSC3240** — 24-bit SSC; [Calibration guide](https://www.renesas.com/en/document/mat/zssc3240-calibration-guide?language=en)
+- [ ] **ZSSC3281** — dual-channel 24-bit SSC for differential pressure, flow and level sensing; [Product / datasheet](https://www.renesas.com/en/products/zssc3281)
+
+### Manufacturer identification pending
+
+- [ ] **"Johann Micro"** — name as heard in brainstorming; **exact manufacturer spelling, official product pages, and relevant pressure SSC part numbers not verified**. Do not assign a protocol group or claim compatibility until identified.
+
+**Selection principle:** Include programmable signal-conditioning ICs suitable for pressure sensing, not complete pre-calibrated pressure-sensor modules. Marketing descriptions and current catalogue listings confirm suitability, but do **not** establish market share, chip-to-chip command compatibility, or completed implementation.
+
 ## Shared development checklist
 
 - [ ] Extract reusable web UI and workflow components from the Elmos prototype
