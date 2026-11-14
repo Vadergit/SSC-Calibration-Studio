@@ -28,7 +28,7 @@ Select a **manufacturer** to open its detailed SSC lists, communication groups, 
 
 The application will provide a common interface with device-specific drivers for register access, communication and calibration methods. Digital measurement readout is preferred where available; precision calibration may still require external reference measurements.
 
-**[Full development roadmap, architecture and task checklist](docs/development-roadmap.md)**
+**[Full development roadmap and task checklist](docs/development-roadmap.md)** · **[Microcontroller firmware, native USB boards and communication protocols](docs/firmware-and-hardware.md)**
 
 ## Project status
 
