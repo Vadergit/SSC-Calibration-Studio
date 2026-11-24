@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.1 — Technical project overview
+- Remove redundant introduction jump links and closing call-to-action.
+- Use compact technical descriptions, function lists and project status; retain direct SSC navigation and related project links.
+- No changes to calibration modules or firmware.
+
 ## v0.4.0 — Project overview and related tools
 - Explain SSC calibration, motivation, target users, available workflows and long-term goals on the start page.
 - Add project roadmap and links to the standalone Elmos application and SensorBridge Emulator, with explicit prototype and hardware-validation status.
