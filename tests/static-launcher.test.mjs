@@ -24,4 +24,6 @@ assert.ok(html.includes('aria-label="Vereinfachte Signalkette: Messbrücke, AFE 
 assert.ok(html.includes('class="diagram-heading"'));
 assert.ok(html.includes('Prinzipdarstellung'));
 assert.ok(html.includes('class="release-dot"'));
+for(const path of ['development-roadmap','studio-architecture','firmware-and-hardware'])assert.ok(html.includes('href="./docs/'+path+'.html"'));
+assert.ok(!html.includes('href="./docs/development-roadmap.md"'));
 console.log('Static launcher and engineering interface tests passed');
