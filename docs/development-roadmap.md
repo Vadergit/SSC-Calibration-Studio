@@ -4,15 +4,19 @@
 
 ## Intended calibration workflow
 
-1. Open the web application and connect either a **supported original manufacturer calibration/evaluation board** or a universal Arduino-/ESP32-compatible USB bridge.
-2. Select the manufacturer and SSC model (automatic identification may be supported where reliable).
-3. Establish communication and read the current configuration and measurement data.
+1. Open the Studio and select the manufacturer and exact SSC model.
+2. Select either a supported original manufacturer board or a DIY bridge, then the SSC communication protocol and task.
+3. Establish communication in the selected module and read the current configuration and measurement data. Offline tasks may skip connection once supported.
 4. Configure calibration points, perform measurements and calculate compensation coefficients.
 5. Write the relevant settings and nonvolatile coefficients to the SSC, where supported.
 6. Verify output accuracy and check diagnostics.
 7. Log raw and corrected measurements, then export calibration results.
 
 The Elmos E703.11 web application is the starting point for UI and workflow reuse. Specific device features vary, and the software must present only actions supported by the selected SSC.
+
+## Current implementation
+
+v0.1.0 implements selection, a registry of standalone modules, Elmos handoff and selection tests. Native device drivers, USB operations and shared calibration views are not yet implemented. See [Studio architecture](studio-architecture.md).
 
 ## Software structure
 

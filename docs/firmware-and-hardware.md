@@ -36,7 +36,7 @@ The hardware adapter should expose common operations (connect, identify, capabil
 | ATtiny and other low-resource MCUs | Model-dependent | **Do not assume native USB.** Many ATtiny parts require an external USB bridge; portable protocol code can still be used if resources and timing allow |
 | Classic ESP32-WROOM / many Arduino Uno or Nano variants | Typically via USB-UART bridge | May still work as serial bridges, but do not meet the *native USB* preference by themselves |
 
-**Hardware selection remains open.** The initial reference board should be cheap, widely available and suitable for timing-critical one-wire protocols. Additional targets can be added without redesigning the web interface.
+**Initial DIY targets: ESP32-C3 SuperMini and Arduino Pro Micro.** Other platforms remain optional candidates; expand only when a protocol or electrical requirement warrants it. Board-specific firmware support and actual SSC compatibility still require validation.
 
 ## Interface and protocol roadmap
 
@@ -109,4 +109,4 @@ The browser must not generate timing-critical bus edges directly. Firmware shoul
 
 ## Target outcome
 
-A user can connect **either a supported original manufacturer calibration board or a supported universal microcontroller bridge**, choose an SSC in the web application and use the **same web workflow** to communicate, calibrate and log data. Board-specific capabilities and limitations are shown in the UI, without needing a separate calibration application for every hardware platform.
+A user can connect **either a supported original manufacturer calibration board or a supported universal microcontroller bridge**, choose an SSC, select its adapter and protocol in the web application and use the **same web workflow** to communicate, calibrate and log data. Board-specific capabilities and limitations are shown in the UI, without needing a separate calibration application for every hardware platform.
