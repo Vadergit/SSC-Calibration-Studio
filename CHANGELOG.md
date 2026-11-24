@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.0 — Direct calibrator launcher
+- Only manufacturer / SSC selection on the Studio start page. Elmos opens directly in the same tab; multi-model manufacturers show their SSC list.
+- Adapter, protocol and task selection remain inside the calibrator. No hardware access or selection parameters from the launcher.
+- Planned models cannot open an unimplemented calibrator. Existing local module and firmware unchanged.
+
 ## v0.2.0 — Local Elmos integration and package boundaries
 - Elmos v0.7.172 pinned and delivered locally; same-tab launch, transfer of task and adapter/protocol choices.
 - Explicit connection and safe return, board identification check, no automatic initial USB connection.

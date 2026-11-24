@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {catalog,calibratorUrl,manufacturerUrl} from '../src/model.mjs';
+assert.equal(manufacturerUrl('elmos'),'./modules/elmos/index.html');
+assert.equal(calibratorUrl('elmos','e70311'),'./modules/elmos/index.html');
+assert.equal(calibratorUrl('elmos','wrong'),null);
+assert.equal(calibratorUrl('renesas','zsc31015'),null);
+assert.equal(manufacturerUrl('renesas'),null);
+assert.equal(manufacturerUrl('unknown'),null);
+for(const m of catalog)for(const c of m.models)if(m.id!=='elmos')assert.equal(calibratorUrl(m.id,c.id),null);
+assert.ok(!manufacturerUrl('elmos').includes('?'));
+console.log('Direct launcher route tests passed');

@@ -204,3 +204,14 @@ export function tasksFor(s){return isComplete(s)?(modules[modelFor(s)?.module]?.
 export function initial(){return emptySelection()}
 export function select(s,key,value){const allowed={manufacturer:()=>catalog.map(x=>x.id),model:()=>modelsFor(s.manufacturer).map(x=>x.id),adapter:()=>adaptersFor(s).map(x=>x.id),protocol:()=>protocolsFor(s),task:()=>tasksFor(s).map(x=>x.id)};return changeSelection(s,key,value,allowed[key]?.()??[])}
 export function handoff(s){if(!tasksFor(s).some(x=>x.id===s.task))return null;return modules[modelFor(s).module].handoff(s)}
+
+// Launcher routes depend only on the SSC, never on hardware or task selection.
+export function calibratorUrl(manufacturer,model){
+ const entry=modelsFor(manufacturer).find(m=>m.id===model);
+ const module=entry?.module?modules[entry.module]:null;
+ return module?.entryUrl??null;
+}
+export function manufacturerUrl(manufacturer){
+ const entries=modelsFor(manufacturer);
+ return entries.length===1?calibratorUrl(manufacturer,entries[0].id):null;
+}
