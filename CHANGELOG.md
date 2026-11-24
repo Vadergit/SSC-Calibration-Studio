@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.1 — Technical documentation pages
+- Format project documentation, architecture, roadmap, hardware/firmware and manufacturer references as static HTML with shared Studio styling, navigation, section links, tables and checklists.
+- Preserve Markdown source documents and their original language. Generate with `node scripts/build-docs.mjs`.
+- No calibration or firmware changes.
+
 ## v0.5.0 — Engineering interface
 - Consolidate the landing page design system, typography, layout and status treatment. Add a technical block diagram, consistent module cards and responsive light/dark styling.
 - Preserve technical copy, direct SSC navigation and static rendering; no calibration or firmware changes.
