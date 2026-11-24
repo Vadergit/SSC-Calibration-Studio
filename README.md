@@ -6,11 +6,11 @@ The goal is a single browser-based application for configuring, calibrating, pro
 
 The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App) is the starting point for the shared user interface and calibration workflow.
 
-## Studio v0.2.0
+## Studio v0.3.0
 
 [Open Studio (once GitHub Pages is enabled)](https://vadergit.github.io/SSC-Calibration-Studio/) · [Architecture and module integration](docs/studio-architecture.md) · [Changelog](CHANGELOG.md)
 
-The first web UI is available in the repository. Choose manufacturer → SSC → adapter → protocol → task. Elmos v0.7.172 is delivered as a pinned local module in the same tab, with adapter, protocol and task transferred. Other SSCs are planning entries. The existing guarded Elmos engine handles USB/NVM only after user action. See [architecture](docs/studio-architecture.md).
+Choose a manufacturer or SSC to open its calibrator directly. Elmos E703.11 opens the pinned local v0.7.172 module in the same tab with no adapter, protocol or task preselected by Studio. These choices belong to the calibrator. Other SSCs are planning entries. The existing guarded Elmos engine handles USB/NVM only after user action. See [architecture](docs/studio-architecture.md).
 
 ## Manufacturers and planned SSC support
 
@@ -30,7 +30,7 @@ Select a **manufacturer** to open its detailed SSC lists, communication groups, 
 
 ## Planned workflow
 
-**Select manufacturer → SSC → programming adapter → communication protocol → task → connect → read / calibrate / program / verify / log**
+**Studio: select manufacturer / SSC → open calibrator. Calibrator: select adapter, communication and task → connect / calibrate / verify / log.**
 
 The application will use **interchangeable hardware adapters** for original manufacturer boards and the open-source microcontroller firmware, plus device-specific drivers for register access, communication and calibration methods. Digital measurement readout is preferred where available; precision calibration may still require external reference measurements.
 
@@ -38,4 +38,4 @@ The application will use **interchangeable hardware adapters** for original manu
 
 ## Project status
 
-**v0.2.0 — Local Elmos integration and modular packages.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. Run `node tests/model.test.mjs`, `node tests/core.test.mjs`, `node tests/bridge.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.
+**v0.3.0 — Direct manufacturer / SSC launcher and local Elmos module.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. Run `node tests/launcher.test.mjs`, `node tests/model.test.mjs`, `node tests/core.test.mjs`, `node tests/bridge.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.

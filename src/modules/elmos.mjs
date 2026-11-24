@@ -3,7 +3,7 @@ import {launchUrl} from '../../packages/core/index.mjs';
 export const elmos = Object.freeze({
  id:'elmos', version:'0.2.0', contractVersion:1, sourceVersion:'0.7.172',
  sourceRevision:'fbd88d422821151b22a440421133a66fb9983c03',
- mode:'local-page',
+ mode:'local-page', entryUrl:'./modules/elmos/index.html',
  adapters:[
   {
     "id": "ssp3",

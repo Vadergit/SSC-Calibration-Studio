@@ -4,8 +4,8 @@
 
 ## Intended calibration workflow
 
-1. Open the Studio and select the manufacturer and exact SSC model.
-2. Select either a supported original manufacturer board or a DIY bridge, then the SSC communication protocol and task.
+1. Open the Studio and select the manufacturer or SSC; open its calibrator directly.
+2. Inside the calibrator, select either a supported original manufacturer board or a DIY bridge, then the SSC communication protocol and task.
 3. Establish communication in the selected module and read the current configuration and measurement data. Offline tasks may skip connection once supported.
 4. Configure calibration points, perform measurements and calculate compensation coefficients.
 5. Write the relevant settings and nonvolatile coefficients to the SSC, where supported.
@@ -16,7 +16,7 @@ The Elmos E703.11 web application is the starting point for UI and workflow reus
 
 ## Current implementation
 
-v0.2.0 implements local pinned Elmos integration, selection transfer, reusable core helpers and a bridge contract. The original Elmos engine handles USB and calibration; shared calibration views, a universal firmware and native Renesas driver are still open. See [Studio architecture](studio-architecture.md).
+v0.3.0 provides a direct manufacturer / SSC launcher, local pinned Elmos integration, reusable core helpers and a bridge contract. Adapter, protocol and task selection take place inside the individual calibrator. The original Elmos engine handles USB and calibration; shared calibration views, a universal firmware and native Renesas driver are still open. See [Studio architecture](studio-architecture.md).
 
 ## Software structure
 
