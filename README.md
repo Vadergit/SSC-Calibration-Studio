@@ -6,6 +6,12 @@ The goal is a single browser-based application for configuring, calibrating, pro
 
 The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App) is the starting point for the shared user interface and calibration workflow.
 
+## Studio v0.1.0
+
+[Open Studio (once GitHub Pages is enabled)](https://vadergit.github.io/SSC-Calibration-Studio/) · [Architecture and module integration](docs/studio-architecture.md) · [Changelog](CHANGELOG.md)
+
+The first web UI is available in the repository. Choose manufacturer → SSC → adapter → protocol → task. Elmos launches the existing official standalone assistant; selection is not yet transferred. Other SSCs are planning entries. No USB or NVM commands originate from Studio.
+
 ## Manufacturers and planned SSC support
 
 Select a **manufacturer** to open its detailed SSC lists, communication groups, links to product information / datasheets and implementation checklists.
@@ -24,7 +30,7 @@ Select a **manufacturer** to open its detailed SSC lists, communication groups, 
 
 ## Planned workflow
 
-**Connect a supported original calibration board or universal USB bridge → Select SSC → Read configuration and raw values → Calibrate → Program → Verify → Log / export**
+**Select manufacturer → SSC → programming adapter → communication protocol → task → connect → read / calibrate / program / verify / log**
 
 The application will use **interchangeable hardware adapters** for original manufacturer boards and the open-source microcontroller firmware, plus device-specific drivers for register access, communication and calibration methods. Digital measurement readout is preferred where available; precision calibration may still require external reference measurements.
 
@@ -32,4 +38,4 @@ The application will use **interchangeable hardware adapters** for original manu
 
 ## Project status
 
-**Planning and modularisation.** The standalone Elmos application exists as a reference; support checkboxes for the universal application are still open.
+**v0.1.0 — Selection UI and standalone handoff.** Native driver integration and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. Run `node tests/model.test.mjs` for selection tests.

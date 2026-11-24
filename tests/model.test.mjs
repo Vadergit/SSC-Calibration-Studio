@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import {initial,select,protocolsFor,tasksFor,handoff,adaptersFor} from '../src/model.mjs';
+let s=initial();
+assert.equal(handoff(s),null);
+assert.throws(()=>select(s,'protocol','spi'));
+for(const [k,v] of Object.entries({manufacturer:'elmos',model:'e70311',adapter:'esp32',protocol:'onewire',task:'calibration'}))s=select(s,k,v);
+assert.deepEqual(protocolsFor(s),['onewire','i2c']);
+assert.equal(handoff(s).selectionTransferred,false);
+assert.equal(handoff(select(s,'task','bridge')).url.endsWith('nvm-rechner.html'),true);
+let a=select(s,'adapter','ssp3');assert.equal(a.task,'');assert.equal(a.protocol,'');assert.ok(protocolsFor(a).includes('spi'));
+let r=select(s,'manufacturer','renesas');assert.equal(r.model,'');assert.equal(handoff(r),null);
+for(const [k,v] of Object.entries({model:'zsc31015',adapter:'sscCb',protocol:'zacwire'}))r=select(r,k,v);
+assert.deepEqual(tasksFor(r),[]);assert.equal(handoff(r),null);assert.throws(()=>select(r,'task','calibration'));
+let u=select(r,'model','zssc3240');assert.equal(u.adapter,'');assert.ok(adaptersFor(u).every(a=>a.protocols[0]==='unknown'));
+console.log('Studio selection tests passed');
