@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.0 — Engineering interface
+- Consolidate the landing page design system, typography, layout and status treatment. Add a technical block diagram, consistent module cards and responsive light/dark styling.
+- Preserve technical copy, direct SSC navigation and static rendering; no calibration or firmware changes.
+
 ## v0.4.2 — Technical visual refinement
 - Add a conceptual signal-chain diagram, local SVG icons, compact technical cards and status accents.
 - Keep technical descriptions, direct SSC navigation and removed jump links unchanged. Responsive light/dark styling; no new browser dependencies.
