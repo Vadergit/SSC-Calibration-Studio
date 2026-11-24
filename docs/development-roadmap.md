@@ -16,7 +16,7 @@ The Elmos E703.11 web application is the starting point for UI and workflow reus
 
 ## Current implementation
 
-v0.1.0 implements selection, a registry of standalone modules, Elmos handoff and selection tests. Native device drivers, USB operations and shared calibration views are not yet implemented. See [Studio architecture](studio-architecture.md).
+v0.2.0 implements local pinned Elmos integration, selection transfer, reusable core helpers and a bridge contract. The original Elmos engine handles USB and calibration; shared calibration views, a universal firmware and native Renesas driver are still open. See [Studio architecture](studio-architecture.md).
 
 ## Software structure
 

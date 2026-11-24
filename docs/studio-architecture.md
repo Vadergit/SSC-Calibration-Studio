@@ -8,7 +8,7 @@ The Elmos source is pinned to fbd88d422821151b22a440421133a66fb9983c03 (v0.7.172
 ## Component boundaries
 - packages/core: common selection contract, module version validation and reference error functions. Future common UI, reports and graphs must migrate with regression and hardware parity tests. Existing Elmos views still use their own implementations.
 - src/modules: versioned registry and supported adapter/protocol/task matrix. Device-specific code remains independent.
-- packages/bridge: future shared firmware interface; existing Elmos firmware remains pinned with the Elmos module, not yet universal across vendors.
+- packages/bridge: shared read-only handshake parser and future firmware interface; existing Elmos firmware remains pinned with the Elmos module, not yet universal across vendors.
 - packages/renesas: standalone-development scaffold, no driver or hardware claim.
 - modules/elmos: distributable local copy of the original app plus a minimal Studio adapter.
 
@@ -16,4 +16,4 @@ The Elmos source is pinned to fbd88d422821151b22a440421133a66fb9983c03 (v0.7.172
 Planned: SSC-Calibration-Core, SSC-Universal-Bridge, Renesas-Calibration-Web-App. The packages are arranged to permit independent development and later extraction; repository creation is not required for building Studio today. Device modules use explicit releases, not moving branches.
 
 ## Release gates
-Run node tests/model.test.mjs, node tests/core.test.mjs and node tests/integration.test.mjs, plus upstream regression suite and real hardware tests. Browser/USB/NVM parity must be verified on each adapter before production use. Original board firmware is not changed. Unsupported SSCs remain planning entries. No native Renesas commands yet.
+Run node tests/model.test.mjs, node tests/core.test.mjs, node tests/bridge.test.mjs and node tests/integration.test.mjs, plus upstream regression suite and real hardware tests. Browser/USB/NVM parity must be verified on each adapter before production use. Original board firmware is not changed. Unsupported SSCs remain planning entries. No native Renesas commands yet.

@@ -16,7 +16,7 @@ The ambition is to cover **all interfaces required by supported SSCs** through s
 
 | Manufacturer | Original hardware candidate | Integration status |
 | --- | --- | --- |
-| Elmos | E703.11 / SSP3 evaluation and communication hardware (exact interface/version to confirm) | Planned; existing standalone Elmos web application is the reference |
+| Elmos | E703.11 / SSP3 evaluation and communication hardware (exact interface/version to confirm) | Elmos v0.7.172 locally integrated; Studio hardware parity tests pending |
 | Renesas / IDT | SSC Communication Board (SSC-CB), with matching sensor-specific evaluation board | Planned; verify each supported chip family |
 | TI, Melexis, NOVOSENSE, Jiuhao and ADI/Maxim | Manufacturer-specific evaluation/programming hardware, to be identified and validated | Research / planned |
 

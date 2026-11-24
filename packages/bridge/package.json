@@ -1,0 +1,9 @@
+{
+  "name": "ssc-universal-bridge",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    "./legacy-elmos": "./legacy-elmos.mjs"
+  }
+}

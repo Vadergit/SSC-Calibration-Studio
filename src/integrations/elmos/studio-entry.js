@@ -15,7 +15,7 @@
   const api=window.ELMOS_GUIDED_API;
   const bar=document.createElement('section');bar.className='ssc-studio-bar';
   const title=document.createElement('strong');title.textContent='SSC Calibration Studio · Elmos E703.11';bar.append(title);
-  const info=document.createElement('span');info.className='ssc-studio-info';info.textContent=config?boards[adapter]+' · '+protocol.toUpperCase()+' · '+labels[task]:'Lokales Elmos-Modul';bar.append(info);
+  const info=document.createElement('span');info.className='ssc-studio-info';info.textContent=config?'Startauswahl: '+boards[adapter]+' · '+protocol.toUpperCase()+' · '+labels[task]:'Lokales Elmos-Modul';bar.append(info);
   const actions=document.createElement('div');actions.className='ssc-studio-actions';bar.append(actions);
   const status=document.createElement('span');status.setAttribute('role','status');status.className='ssc-studio-info';bar.append(status);
   const make=(label,fn)=>{const b=document.createElement('button');b.type='button';b.textContent=label;b.addEventListener('click',fn);actions.append(b);return b};
@@ -24,9 +24,9 @@
   function safe(){const s=api?.state?.();const n=situation();return !!s&&!pending&&!s.connectionBusy&&!n.critical&&!n.measuring&&!n.unfinished&&!n.recording}
   const back=make('← SSC-Auswahl',()=>{const s=api?.state?.();if(!safe()||s.usbConnected){status.textContent='Zuerst Vorgang abschliessen und USB trennen.';return}location.assign('../../')});
   const connect=make('USB-Port auswählen',async()=>{
-   if(!config||pending||!api||api.state().usbConnected)return;
+   if(!config||!safe()||!api||api.state().usbConnected)return;
    pending=true;status.textContent='Verbindung wird aufgebaut …';refresh();
-   try{await api.connectGuided({adapter:config.adapter,iface:config.iface,choosePort:true});status.textContent='Sensor erkannt. Aufgabe kann gestartet werden.'}
+   try{await api.connectGuided({adapter:config.adapter,iface:config.iface,choosePort:true});status.textContent='Sensor erkannt. Die gewählte Aufgabe ist verfügbar.'}
    catch(e){status.textContent=String(e.message||e)}
    finally{pending=false;refresh()}
   });
@@ -34,7 +34,7 @@
    if(!safe()||!api.state().usbConnected)return;
    document.getElementById('disconnect')?.click();
   });
-  const start=make(config?'Aufgabe starten':'Aufgabe auswählen',()=>{
+  const start=make(config?labels[task]+' starten':'Aufgabe auswählen',()=>{
    if(!config||!api||started||!safe()||(!offline.includes(task)&&!api.state().chip))return;
    if(task==='bridge'&&location.hash==='#nvm-rechner'){started=true;refresh();return}
    const guided=window.ELMOS_GUIDED;
@@ -48,7 +48,9 @@
    const ready=!!s&&!pending;
    const idle=safe();
    back.disabled=!idle||!!s?.usbConnected;
-   connect.hidden=!config||offline.includes(task);
+   back.title=back.disabled?'Zuerst laufende Aufgabe abschliessen und USB trennen.':'';
+   connect.hidden=!config;
+   connect.textContent=offline.includes(task)?'USB verbinden (optional)':'USB-Port auswählen';
    connect.disabled=!ready||!idle||!!s?.usbConnected||!!s?.demo;
    disconnect.hidden=!s?.usbConnected;
    disconnect.disabled=!idle;

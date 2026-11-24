@@ -18,7 +18,7 @@ Select a **manufacturer** to open its detailed SSC lists, communication groups, 
 
 | Manufacturer | SSC models / families | Progress |
 | --- | --- | --- |
-| **[Elmos](docs/manufacturers/elmos.md)** | E703.11 | Existing standalone app; universal integration open |
+| **[Elmos](docs/manufacturers/elmos.md)** | E703.11 | Local v0.7.172 integration; hardware verification open |
 | **[Renesas / IDT](docs/manufacturers/renesas-idt.md)** | ZSC31010, ZSC31014, ZSC31015, ZSC31050, ZSC31150, ZSSC3154, ZSSC3240, ZSSC3281 | Planned |
 | **[NOVOSENSE](docs/manufacturers/novosense.md)** | NSA2200, NSA2300, NSA2302, NSA2860(X), NSC2860X, NSA/NSC9260(X), NSC9262, NSC9264 | Planned |
 | **[Texas Instruments](docs/manufacturers/texas-instruments.md)** | PGA300, PGA302, PGA305, PGA309 | Planned |
@@ -38,4 +38,4 @@ The application will use **interchangeable hardware adapters** for original manu
 
 ## Project status
 
-**v0.2.0 — Local Elmos integration and modular packages.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. Run `node tests/model.test.mjs`, `node tests/core.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.
+**v0.2.0 — Local Elmos integration and modular packages.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. Run `node tests/model.test.mjs`, `node tests/core.test.mjs`, `node tests/bridge.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.
