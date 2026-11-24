@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.3.1 — Static launcher fix
+- Render the complete manufacturer catalog and direct Elmos link into index.html at build time. No browser ES-module loader is required for navigation.
+- Native HTML details for planned SSC lists; optional standalone classic script for theme switching.
+- Generate from the existing registry and test the committed HTML for parity. Elmos module and firmware unchanged.
+
 ## v0.3.0 — Direct calibrator launcher
 - Only manufacturer / SSC selection on the Studio start page. Elmos opens directly in the same tab; multi-model manufacturers show their SSC list.
 - Adapter, protocol and task selection remain inside the calibrator. No hardware access or selection parameters from the launcher.
