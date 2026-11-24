@@ -13,4 +13,9 @@ assert.ok(html.includes('href="https://github.com/Vadergit/SensorBridge-Emulator
 assert.ok(html.includes('href="https://vadergit.github.io/SensorBridge-Emulator/"'));
 assert.ok(html.includes('noch nicht validiert'));
 assert.ok(html.indexOf('id="calibrators"')<html.indexOf('id="about"'));
-console.log('Static no-JavaScript launcher and project overview tests passed');
+assert.ok(!html.includes('href="#calibrators"'));
+assert.ok(!html.includes('href="#about"'));
+assert.ok(html.includes('id="project-title">Projektübersicht'));
+assert.ok(html.includes('id="functions-title">Funktionsumfang'));
+assert.ok(html.includes('id="goals-title">Entwicklungsziele'));
+console.log('Static no-JavaScript launcher and technical overview tests passed');
