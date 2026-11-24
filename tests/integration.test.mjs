@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+const html=readFileSync(new URL('../modules/elmos/index.html',import.meta.url),'utf8');
+const app=readFileSync(new URL('../modules/elmos/app.js',import.meta.url),'utf8');
+assert.ok(html.includes('src="studio-entry.js"'));
+assert.ok(app.includes('const studioLaunch=window.SSC_STUDIO_LAUNCH'));
+assert.ok(app.includes('let autoReconnectEnabled=false;'));
+assert.ok(!app.includes('setTimeout(()=>auto().catch(()=>{}),350)'));
+assert.ok(app.includes('USB-Bridge stimmt nicht mit der Studio-Auswahl überein'));
+assert.ok(app.includes('SPI-Testmodus benötigt aktivierte Expertenparameter'));
+assert.ok(app.includes('nvmProgram'));
+console.log('Pinned integration smoke checks passed');

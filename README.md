@@ -6,11 +6,11 @@ The goal is a single browser-based application for configuring, calibrating, pro
 
 The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App) is the starting point for the shared user interface and calibration workflow.
 
-## Studio v0.1.0
+## Studio v0.2.0
 
 [Open Studio (once GitHub Pages is enabled)](https://vadergit.github.io/SSC-Calibration-Studio/) · [Architecture and module integration](docs/studio-architecture.md) · [Changelog](CHANGELOG.md)
 
-The first web UI is available in the repository. Choose manufacturer → SSC → adapter → protocol → task. Elmos launches the existing official standalone assistant; selection is not yet transferred. Other SSCs are planning entries. No USB or NVM commands originate from Studio.
+The first web UI is available in the repository. Choose manufacturer → SSC → adapter → protocol → task. Elmos v0.7.172 is delivered as a pinned local module in the same tab, with adapter, protocol and task transferred. Other SSCs are planning entries. The existing guarded Elmos engine handles USB/NVM only after user action. See [architecture](docs/studio-architecture.md).
 
 ## Manufacturers and planned SSC support
 
@@ -38,4 +38,4 @@ The application will use **interchangeable hardware adapters** for original manu
 
 ## Project status
 
-**v0.1.0 — Selection UI and standalone handoff.** Native driver integration and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. Run `node tests/model.test.mjs` for selection tests.
+**v0.2.0 — Local Elmos integration and modular packages.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. Run `node tests/model.test.mjs`, `node tests/core.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.

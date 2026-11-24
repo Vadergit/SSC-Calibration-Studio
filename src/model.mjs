@@ -1,4 +1,5 @@
 import {modules} from './modules/index.mjs';
+import {emptySelection,changeSelection} from '../packages/core/index.mjs';
 export const catalog = [
   {
     "id": "elmos",
@@ -200,6 +201,6 @@ export function adaptersFor(s){const m=modelFor(s);if(!m)return [];return module
 export function protocolsFor(s){return adaptersFor(s).find(x=>x.id===s.adapter)?.protocols??[]}
 export function isComplete(s){return protocolsFor(s).includes(s.protocol)}
 export function tasksFor(s){return isComplete(s)?(modules[modelFor(s)?.module]?.tasks??[]):[]}
-export function initial(){return {manufacturer:"",model:"",adapter:"",protocol:"",task:""}}
-export function select(s,key,value){const order=["manufacturer","model","adapter","protocol","task"];const allowed={manufacturer:()=>catalog.map(x=>x.id),model:()=>modelsFor(s.manufacturer).map(x=>x.id),adapter:()=>adaptersFor(s).map(x=>x.id),protocol:()=>protocolsFor(s),task:()=>tasksFor(s).map(x=>x.id)};if(!allowed[key]||!allowed[key]().includes(value))throw new Error("Ungültige Auswahl");const next={...s,[key]:value};if(s[key]!==value)for(const k of order.slice(order.indexOf(key)+1))next[k]="";return next}
-export function handoff(s){if(!tasksFor(s).some(x=>x.id===s.task))return null;return modules[modelFor(s).module].handoff(s.task)}
+export function initial(){return emptySelection()}
+export function select(s,key,value){const allowed={manufacturer:()=>catalog.map(x=>x.id),model:()=>modelsFor(s.manufacturer).map(x=>x.id),adapter:()=>adaptersFor(s).map(x=>x.id),protocol:()=>protocolsFor(s),task:()=>tasksFor(s).map(x=>x.id)};return changeSelection(s,key,value,allowed[key]?.()??[])}
+export function handoff(s){if(!tasksFor(s).some(x=>x.id===s.task))return null;return modules[modelFor(s).module].handoff(s)}

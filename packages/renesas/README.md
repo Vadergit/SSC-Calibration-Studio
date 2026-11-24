@@ -1,0 +1,2 @@
+# Renesas calibration module — development scaffold
+Target repository name: Renesas-Calibration-Web-App. Initial candidates ZSC31015 and ZSC31050; verify model programming specifications and SSC-CB host protocol before implementation. No connection or write driver is enabled. Develop and test standalone, then register a versioned module using the core manifest contract. Keep original SSC-CB and DIY bridge separate at the adapter boundary.
