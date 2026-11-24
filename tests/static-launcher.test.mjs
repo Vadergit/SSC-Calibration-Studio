@@ -21,4 +21,7 @@ assert.ok(html.includes('id="goals-title">Entwicklungsziele'));
 assert.ok(html.includes('class="signal-chain"'));
 assert.equal((html.match(/class="maker-icon"/g)||[]).length,catalog.length);
 assert.ok(html.includes('aria-label="Vereinfachte Signalkette: Messbrücke, AFE und ADC, DSP, Sensorausgang"'));
-console.log('Static launcher, technical overview and visual assets tests passed');
+assert.ok(html.includes('class="diagram-heading"'));
+assert.ok(html.includes('Prinzipdarstellung'));
+assert.ok(html.includes('class="release-dot"'));
+console.log('Static launcher and engineering interface tests passed');

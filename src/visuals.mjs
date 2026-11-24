@@ -7,7 +7,7 @@ const paths={
  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
  save:'<path d="M4 4h13l3 3v13H4zM8 4v6h8V4M8 20v-7h8v7"/>',
  chart:'<path d="M4 4v16h16M7 15l4-5 3 3 5-7"/>',
- bridge:'<path d="M12 2 22 12 12 22 2 12Z"/><path d="M7 7l10 10M17 7 7 17" opacity=".45"/><circle cx="12" cy="2" r="1"/><circle cx="22" cy="12" r="1"/><circle cx="12" cy="22" r="1"/><circle cx="2" cy="12" r="1"/>',
+ bridge:'<path d="M12 2 9 5m-4 4-3 3 3 3m4 4 3 3 3-3m4-4 3-3-3-3m-4-4-3-3"/><path d="m9 5-4 4m14 0-4-4M5 15l4 4m10-4-4 4" stroke-width="3"/><circle cx="12" cy="2" r="1"/><circle cx="22" cy="12" r="1"/><circle cx="12" cy="22" r="1"/><circle cx="2" cy="12" r="1"/>',
  file:'<path d="M5 3h9l5 5v13H5zM14 3v5h5M8 12h8m-8 4h8"/>',
  layers:'<path d="m12 3 9 5-9 5-9-5 9-5Zm-9 9 9 5 9-5m-18 4 9 5 9-5"/>',
  wrench:'<path d="M14 6a5 5 0 0 0-6 6l-5 5a2.5 2.5 0 0 0 4 4l5-5a5 5 0 0 0 6-6l-4 2-2-2 2-4Z"/>',
@@ -17,14 +17,15 @@ export function technicalIcon(name,cls='tech-icon'){
  return '<span class="'+cls+'" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'+(paths[name]||paths.chip)+'</svg></span>';
 }
 export function signalChain(){
- return `<figure class="signal-chain"><svg viewBox="0 0 440 140" role="img" aria-label="Vereinfachte Signalkette: Messbrücke, AFE und ADC, DSP, Sensorausgang">
+ return `<figure class="signal-chain"><div class="diagram-heading"><span>SSC · Signalverarbeitung</span><span>BLOCKDIAGRAMM</span></div><svg viewBox="0 0 480 180" role="img" aria-label="Vereinfachte Signalkette: Messbrücke, AFE und ADC, DSP, Sensorausgang">
  <g fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">
- <rect class="diagram-node" x="5" y="29" width="94" height="81" rx="8"/><rect class="diagram-node" x="124" y="29" width="89" height="81" rx="8"/><rect class="diagram-node" x="238" y="29" width="80" height="81" rx="8"/><rect class="diagram-node" x="343" y="29" width="92" height="81" rx="8"/>
- <path d="M99 69h25m-5-4 5 4-5 4m94-4h25m-5-4 5 4-5 4m85-4h25m-5-4 5 4-5 4"/>
- <path d="M52 40 77 65 52 90 27 65Z M52 35v5m0 50v5M27 65h-9m59 0h9" stroke-width="1.8"/>
- <path d="M136 53h12m-12 24h12m0-31 25 19-25 19zM173 65h12m0-15v30m5-24h9m-9 9h9m-9 9h9"/>
- <rect x="258" y="48" width="40" height="36" rx="3"/><path d="M267 43v5m11-5v5m11-5v5m-22 36v5m11-5v5m11-5v5M253 57h5m-5 9h5m-5 9h5m40-18h5m-5 9h5m-5 9h5"/>
- <path d="M355 81h67m-67 0V46m4 29 13-12 12 3 15-13 17-5" stroke-width="1.8"/>
- </g><g class="diagram-label" text-anchor="middle"><text x="52" y="125">Messbrücke</text><text x="168" y="125">AFE / ADC</text><text x="278" y="125">DSP</text><text x="389" y="125">Ausgang</text></g>
- <text class="diagram-caption" x="220" y="16" text-anchor="middle">SSC · vereinfachte Signalkette</text></svg></figure>`;
+ <rect class="diagram-boundary" x="121" y="18" width="235" height="120" rx="8" stroke-dasharray="4 4"/>
+ <rect class="diagram-node" x="4" y="31" width="96" height="96" rx="6"/><rect class="diagram-node" x="132" y="31" width="94" height="96" rx="6"/><rect class="diagram-node" x="247" y="31" width="98" height="96" rx="6"/><rect class="diagram-node" x="378" y="31" width="98" height="96" rx="6"/>
+ <path d="M100 79h32m-6-4 6 4-6 4m100-4h21m-6-4 6 4-6 4m104-4h33m-6-4 6 4-6 4"/>
+ <g transform="translate(52 76)"><path d="M0-32v9m0 46v9M-31 0h8m46 0h8M0-23l-6 6m-11 11-6 6 6 6m11 11 6 6 6-6m11-11 6-6-6-6m-11-11-6-6"/><g fill="var(--diagram-surface)"><rect x="-3.5" y="-21" width="7" height="16" transform="rotate(45)"/><rect x="-3.5" y="-21" width="7" height="16" transform="rotate(-45)"/><rect x="-3.5" y="5" width="7" height="16" transform="rotate(45)"/><rect x="-3.5" y="5" width="7" height="16" transform="rotate(-45)"/></g><circle cx="0" cy="-23" r="1.6" fill="currentColor"/><circle cx="0" cy="23" r="1.6" fill="currentColor"/><circle cx="-23" cy="0" r="1.6" fill="currentColor"/><circle cx="23" cy="0" r="1.6" fill="currentColor"/></g>
+ <path d="M143 66h13m-13 23h13m0-31 30 20-30 20zM186 78h10m0-20v40m7-31h12m-12 11h12m-12 11h12"/><path d="M160 66h5m-2.5-2.5v5m-2.5 20h5"/>
+ <rect x="278" y="58" width="36" height="40" rx="3"/><path d="M285 52v6m11-6v6m11-6v6m-22 40v6m11-6v6m11-6v6M272 65h6m-6 13h6m-6 13h6m36-26h6m-6 13h6m-6 13h6"/><path d="m286 83 6-10 6 10 7-10"/>
+ <path d="M391 99h70m-70 0V52" opacity=".65"/><path d="M398 90l15-12 13-4 14-12 14-8" stroke-width="2"/><circle cx="398" cy="90" r="2" fill="currentColor"/><circle cx="454" cy="54" r="2" fill="currentColor"/>
+ </g><g class="diagram-label" text-anchor="middle"><text x="52" y="148">Messbrücke</text><text x="179" y="148">AFE / ADC</text><text x="296" y="148">DSP</text><text x="427" y="148">Ausgang</text></g>
+ <g class="diagram-caption" text-anchor="middle"><text x="52" y="164">mV/V</text><text x="179" y="164">Rohdaten</text><text x="296" y="164">Kompensation</text><text x="427" y="164">Analog / Digital</text><text x="238" y="12">SENSOR SIGNAL CONDITIONER</text></g></svg><figcaption>Prinzipdarstellung · abhängig von SSC und Ausgangstyp</figcaption></figure>`;
 }
