@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="de-CH">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>DIY-Programmer aktualisieren · E703.11</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      font: 1rem/1.55 system-ui, sans-serif;
+      --page: light-dark(#edf4f5, #10191e);
+      --card: light-dark(#fff, #19262d);
+      --panel: light-dark(#eff7f6, #213139);
+      --line: light-dark(#d2e0df, #3b4d54);
+      --ink: light-dark(#142b35, #edf7f7);
+      --muted: light-dark(#465e68, #abc2c8);
+      --accent: light-dark(#0a655d, #80ddcf);
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; background: var(--page); color: var(--ink); }
+    main { width: min(76rem, 100%); margin: auto; padding: clamp(1rem, 4vw, 3rem); }
+    a { color: var(--accent); text-underline-offset: .18em; }
+    .intro { margin-bottom: 1.5rem; }
+    h1 { margin: .6rem 0 .4rem; font-size: clamp(1.8rem, 4vw, 2.65rem); line-height: 1.15; }
+    h2 { margin: 0; font-size: clamp(1.2rem, 2.5vw, 1.5rem); line-height: 1.25; }
+    p { margin: .65rem 0; }
+    .intro p, .note, figcaption { color: var(--muted); }
+    .boards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1.25rem; }
+    .board { padding: clamp(1rem, 2vw, 1.5rem); min-width: 0; border: 1px solid var(--line); border-radius: 1.15rem; background: var(--card); }
+    .version { color: var(--muted); font-size: .82em; white-space: nowrap; }
+    .actions { margin-top: .9rem; min-height: 9.5rem; }
+    .actions p { font-size: .9rem; }
+    .buttons { display: flex; flex-wrap: wrap; gap: .45rem; }
+    button, select { font: inherit; }
+    select { max-width: 100%; padding: .42rem .55rem; margin-left: .25rem; }
+    button {
+      padding: .53rem .85rem;
+      border: 1px solid transparent;
+      border-radius: .55rem;
+      background: #0a655d;
+      color: #fff;
+      cursor: pointer;
+      font-weight: 600;
+    }
+    button.secondary { border-color: var(--line); background: var(--panel); color: var(--ink); }
+    button:disabled { opacity: .5; cursor: default; }
+    :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; }
+    summary { color: var(--accent); cursor: pointer; font-size: .9rem; }
+    figure { margin: 1rem 0; padding: .75rem; background: var(--panel); border: 1px solid var(--line); border-radius: .8rem; }
+    .image-area { display: grid; place-items: center; min-height: clamp(12rem, 24vw, 18rem); }
+    .board-photo { position: relative; width: min(100%, var(--photo-width)); }
+    .board-photo img { display: block; width: 100%; height: auto; border-radius: .35rem; }
+    .esp-photo { --photo-width: 20rem; }
+    .pro-photo { --photo-width: 29rem; }
+    .pin {
+      --pin-color: #374151;
+      display: inline-grid;
+      place-items: center;
+      flex: 0 0 auto;
+      width: 1.3rem;
+      height: 1.3rem;
+      border-radius: 50%;
+      background: var(--pin-color);
+      color: white;
+      font: 700 .72rem/1 system-ui, sans-serif;
+    }
+    .board-photo .pin {
+      position: absolute;
+      left: var(--x);
+      top: var(--y);
+      transform: translate(-50%, -50%);
+      border: 1px solid white;
+      box-shadow: 0 0 0 1px #17232c;
+    }
+    .pin.aodo { --pin-color: #b42318; }
+    .pin.sda { --pin-color: #1454a7; }
+    .pin.scl { --pin-color: #087367; }
+    .pin.power { --pin-color: #713cab; }
+    figcaption { margin-top: .7rem; font-size: .83rem; }
+    table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+    th, td { padding: .45rem .35rem; text-align: left; border-bottom: 1px solid var(--line); }
+    th[scope="row"] { white-space: nowrap; }
+    th[scope="row"] .pin { margin-right: .35rem; vertical-align: middle; }
+    .note { font-size: .9rem; }
+    .shared-note { margin-top: 1.25rem; padding: .8rem 1rem; border-left: 3px solid var(--accent); }
+    @media (max-width: 760px) {
+      .boards { grid-template-columns: 1fr; }
+      .actions { min-height: auto; }
+      .image-area { min-height: auto; }
+    }
+  </style>
+</head>
+<body>
+<main>
+  <header class="intro">
+  <a href="index.html">Zum Kalibrierassistenten</a>
+  <h1>DIY-Programmer-Firmware aktualisieren</h1>
+  <p>Trenne zuerst die USB-Verbindung im Kalibrierassistenten. Lass danach das Board per USB angeschlossen.</p>
+  </header>
+
+  <div class="boards">
+
+  <section class="board" aria-labelledby="esp32">
+    <h2 id="esp32">ESP32-C3 SuperMini <span class="version">v0.14 (Labor)</span></h2>
+    <p>One-Wire und I²C. Wähle im USB-Dialog den ESP32-C3 SuperMini.</p>
+    <p class="note"><strong>Neu in v0.14 (Labor):</strong> I²C-Erkennung auch für Sensoradressen 0x79–0x7F, einschliesslich 0x7D. Beide Adresspaare 0x6C/0x6D und 0x7C/0x7D am Sensor getestet. USB-Antworten werden vollständig gesendet, bevor der nächste Befehl verarbeitet wird. Die installierbare Firmware ist kompiliert. <strong>Der tatsächliche NVM-Schreibvorgang am Sensor ist noch nicht hardwarevalidiert.</strong> Nur mit einem entbehrlichen Testchip testen. Vor dem Firmwareupdate alle noch nicht gespeicherten Kalibrierdaten und das Original-NVM sichern. <a href="docs/ESP32_C3_PLC_TEST.md">Technische Details</a>.</p>
+    <div class="actions">
+    <esp-web-install-button manifest="firmware/releases/esp32-c3/v0.14/manifest.json">
+      <button type="button" slot="activate" disabled>ESP32 installieren</button>
+      <span slot="unsupported">Öffne diese Seite in Chrome oder Edge auf dem Computer.</span>
+      <span slot="not-allowed">Öffne diese Seite über HTTPS oder localhost.</span>
+    </esp-web-install-button>
+    <p id="installerStatus" role="status">Installer wird geladen …</p>
+    <noscript>Für den Browser-Installer muss JavaScript aktiv sein.</noscript>
+    </div>
+    <figure>
+      <div class="image-area">
+        <div class="board-photo esp-photo">
+          <img src="assets/boards/esp32-c3-supermini.png" width="464" height="388" alt="ESP32-C3 SuperMini von oben, USB-C-Anschluss oben">
+          <span class="pin aodo" style="--x:75.3%;--y:41.3%" aria-hidden="true">1</span>
+          <span class="pin sda" style="--x:24.1%;--y:22%" aria-hidden="true">2</span>
+          <span class="pin scl" style="--x:24.1%;--y:31.8%" aria-hidden="true">3</span>
+          <span class="pin power" style="--x:24.1%;--y:61.1%" aria-hidden="true">4</span>
+          <span class="pin" style="--x:75.3%;--y:22%" aria-hidden="true">5</span>
+        </div>
+      </div>
+      <figcaption>USB-C oben. Die Nummern kennzeichnen die Anschlüsse in der Tabelle.</figcaption>
+    </figure>
+    <table aria-label="Anschlüsse ESP32-C3 SuperMini">
+      <thead><tr><th scope="col">ESP32-C3</th><th scope="col">Elmos E703.11</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="pin aodo" aria-hidden="true">1</span>GPIO4</th><td>AODO (Pin 14) · One-Wire</td></tr>
+        <tr><th scope="row"><span class="pin sda" aria-hidden="true">2</span>GPIO6</th><td>SDA (Pin 11) · I²C</td></tr>
+        <tr><th scope="row"><span class="pin scl" aria-hidden="true">3</span>GPIO7</th><td>SCL (Pin 10) · I²C</td></tr>
+        <tr><th scope="row"><span class="pin power" aria-hidden="true">4</span>GPIO10</th><td>Optional: Enable am Lastschalter für Sensor-VDD</td></tr>
+        <tr><th scope="row"><span class="pin " aria-hidden="true">5</span>GND</th><td>Sensor-GND</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Sensorversorgung und Signalpegel: 3,3 V. Bei I²C-Auswahl über NCS/SA0 den Sensor-Pin 9 mit GND verbinden.</p>
+    <p><a href="docs/ESP32_C3_PLC_TEST.md">Anschlussplan und Firmware-Stand</a></p>
+  </section>
+
+  <section class="board" aria-labelledby="pro-micro">
+    <h2 id="pro-micro">Pro Micro <span class="version">v0.29 (Labor)</span></h2>
+    <p>One-Wire und I²C. Wähle die auf deinem Board angegebene Ausführung.</p>
+    <div class="actions">
+    <p><label for="proMicroClock">Ausführung</label>
+      <select id="proMicroClock">
+        <option value="">Bitte wählen</option>
+        <option value="16">5 V / 16 MHz</option>
+        <option value="8">3,3 V / 8 MHz</option>
+      </select>
+    </p>
+    <p class="buttons"><button type="button" class="secondary" id="proMicroStart" disabled>Bootloader starten</button>
+      <button type="button" id="proMicroChoose" disabled>Pro Micro installieren</button></p>
+    <p id="proMicroStatus" role="status"></p>
+    <details><summary>HEX-Datei für manuellen Upload</summary><ul>
+      <li><a href="firmware/releases/pro-micro/v0.29/pro-micro-16mhz.hex" download>HEX für 5 V / 16 MHz</a></li>
+      <li><a href="firmware/releases/pro-micro/v0.29/pro-micro-8mhz.hex" download>HEX für 3,3 V / 8 MHz</a></li>
+    </ul></details>
+    </div>
+    <figure>
+      <div class="image-area">
+        <div class="board-photo pro-photo">
+          <img src="assets/boards/pro-micro.png" width="679" height="349" alt="Pro Micro von oben, USB-Anschluss links">
+          <span class="pin aodo" style="--x:60.2%;--y:92%" aria-hidden="true">1</span>
+          <span class="pin sda" style="--x:45.7%;--y:92%" aria-hidden="true">2</span>
+          <span class="pin scl" style="--x:53%;--y:92%" aria-hidden="true">3</span>
+          <span class="pin power" style="--x:82%;--y:92%" aria-hidden="true">4</span>
+          <span class="pin" style="--x:38.3%;--y:92%" aria-hidden="true">5</span>
+        </div>
+      </div>
+      <figcaption>USB links. Die Nummern kennzeichnen die Anschlüsse in der Tabelle.</figcaption>
+    </figure>
+    <table aria-label="Anschlüsse Pro Micro">
+      <thead><tr><th scope="col">Pro Micro</th><th scope="col">Elmos E703.11</th></tr></thead>
+      <tbody>
+        <tr><th scope="row"><span class="pin aodo" aria-hidden="true">1</span>D4</th><td>AODO (Pin 14) · One-Wire</td></tr>
+        <tr><th scope="row"><span class="pin sda" aria-hidden="true">2</span>D2</th><td>SDA (Pin 11) · I²C</td></tr>
+        <tr><th scope="row"><span class="pin scl" aria-hidden="true">3</span>D3</th><td>SCL (Pin 10) · I²C</td></tr>
+        <tr><th scope="row"><span class="pin power" aria-hidden="true">4</span>D7</th><td>Optional: Enable am Lastschalter für Sensor-VDD</td></tr>
+        <tr><th scope="row"><span class="pin " aria-hidden="true">5</span>GND</th><td>Sensor-GND</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Sensorversorgung und Signalpegel passend zur Pro-Micro-Version: 3,3 V (8 MHz) oder 5 V (16 MHz).</p>
+    <a href="docs/PRO_MICRO_PLC_TEST.md">Anleitung für Pro Micro</a>
+  </section>
+
+  </div>
+
+  <p class="note shared-note">Für dauerhaftes Speichern über I²C die Sensorversorgung über den Adapter schalten und den Sensor vor dem Abgleich verbinden. Der Sensor muss nach dem Einschalten direkt über I²C antworten. Eine vorübergehende I²C-Freigabe über AODO ermöglicht den Zugriff im RAM.</p>
+</main>
+
+  <script type="module">
+    import { setupProMicroInstaller } from './pro-micro-installer.js?v=0.29';
+    setupProMicroInstaller();
+    const installer = document.querySelector('esp-web-install-button');
+    const status = document.getElementById('installerStatus');
+    if (!window.isSecureContext || !('serial' in navigator)) {
+      installer.hidden = true;
+      status.textContent = 'Öffne diese Seite in Chrome oder Edge über HTTPS oder localhost.';
+    } else {
+      try {
+        await import('https://unpkg.com/esp-web-tools@10.5.2/dist/web/install-button.js?module');
+        await customElements.whenDefined('esp-web-install-button');
+        installer.querySelector('button').disabled = false;
+        status.hidden = true;
+      } catch {
+        status.textContent = 'Installer konnte nicht geladen werden. Prüfe die Internetverbindung und lade die Seite neu.';
+      }
+    }
+  </script>
+</body>
+</html>

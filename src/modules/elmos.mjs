@@ -1,8 +1,9 @@
-// Standalone integration, not a native hardware driver.
+import {launchUrl} from '../../packages/core/index.mjs';
+// Versioned local-page integration; upstream calibration engine remains intact.
 export const elmos = Object.freeze({
- id:'elmos', version:'0.1.0', sourceVersion:'0.7.172',
+ id:'elmos', version:'0.2.0', contractVersion:1, sourceVersion:'0.7.172',
  sourceRevision:'fbd88d422821151b22a440421133a66fb9983c03',
- mode:'standalone',
+ mode:'local-page',
  adapters:[
   {
     "id": "ssp3",
@@ -69,8 +70,8 @@ export const elmos = Object.freeze({
     "desc": "Fehlerreaktionen und Alarmgrenzen"
   }
 ],
- handoff(task){
-  if(!this.tasks.some(t=>t.id===task))return null;
-  return {url:task==='bridge'?'https://vadergit.github.io/ELMOS-E703.11-Calibration-Web-App/nvm-rechner.html':'https://vadergit.github.io/ELMOS-E703.11-Calibration-Web-App/',mode:this.mode,selectionTransferred:false};
+ handoff(selection){
+  if(!this.tasks.some(t=>t.id===selection.task)||!this.adapters.some(a=>a.id===selection.adapter&&a.protocols.includes(selection.protocol)))return null;
+  return {url:launchUrl('./modules/elmos/index.html',selection,selection.task==='bridge'?'#nvm-rechner':''),mode:this.mode,selectionTransferred:true};
  }
 });

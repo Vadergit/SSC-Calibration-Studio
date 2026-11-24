@@ -2,14 +2,14 @@
 
 [← Manufacturer overview](../../README.md)
 
-**Status:** Planned — no SSC driver has been marked complete in the universal application.
+**Status:** Elmos v0.7.172 integrated as a pinned local module. Studio-specific browser and hardware verification still pending; no SSC marked complete.
 
 ## Supported device families
 
 Reference hardware ecosystem: [Elmos E703.11 product page](https://www.elmos.com/english/products/sensor-ics/sensor-signal-processor-ic/e70311.html). The E703.11 datasheet is listed by Elmos **on request**.
 
 - [ ] **Elmos platform group complete** (all listed devices integrated and validated)
-  - [ ] [E703.11](https://www.elmos.com/english/products/sensor-ics/sensor-signal-processor-ic/e70311.html) — I²C / SPI; **existing standalone web app available**, integration into universal platform pending. [Existing app](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App)
+  - [ ] [E703.11](https://www.elmos.com/english/products/sensor-ics/sensor-signal-processor-ic/e70311.html) — 1-Wire / I²C / SPI (SPI: SSP3 expert test mode only); **local module included in Studio v0.2.0**, standalone app maintained separately. [Existing app](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App)
 
 Additional Elmos devices may be added after their programming interfaces and hardware compatibility are verified.
 

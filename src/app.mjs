@@ -20,19 +20,19 @@ function render(){
  const panel=el('section','panel');panel.append(el('div','eyebrow','SCHRITT '+(page+1)+' VON 5'));
  const heading=el('h2','',labels[page]);heading.id='heading';heading.tabIndex=-1;panel.append(heading,el('p','muted',desc[page]));
  const grid=el('div','choices');panel.append(grid);
- if(page===0)catalog.forEach(m=>choice(grid,m.name,m.id==='elmos'?'Bestehender Einzelassistent':'Geplant · '+m.models.length+' Modelle / Gruppen',state.manufacturer===m.id,()=>choose('manufacturer',m.id)));
- if(page===1)modelsFor(state.manufacturer).forEach(m=>choice(grid,m.name,m.module==='elmos'?'Einzelassistent vorhanden · native Integration offen':'Treiber geplant',state.model===m.id,()=>choose('model',m.id)));
- if(page===2){adaptersFor(state).forEach(a=>choice(grid,adapters[a.id],modelFor(state)?.module==='elmos'?'Im Elmos-Einzelassistenten auswählbar':'Kandidat · Kombination nicht validiert',state.adapter===a.id,()=>choose('adapter',a.id)));note(panel,'Die DIY-Boards benötigen eine passende Firmware, korrekte Signalpegel und gegebenenfalls externe Pegelwandler / Lastschalter.');}
- if(page===3){protocolsFor(state).forEach(p=>choice(grid,protocols[p],modelFor(state)?.module==='elmos'?'Im Einzelassistenten verfügbar · Hardwarestatus beachten':'Planung · Adapterunterstützung noch nicht bestätigt',state.protocol===p,()=>choose('protocol',p)));note(panel,'Die Auswahl stellt noch keine Geräteverbindung her.');}
+ if(page===0)catalog.forEach(m=>choice(grid,m.name,m.id==='elmos'?'Lokales Modul · v0.7.172':'Geplant · '+m.models.length+' Modelle / Gruppen',state.manufacturer===m.id,()=>choose('manufacturer',m.id)));
+ if(page===1)modelsFor(state.manufacturer).forEach(m=>choice(grid,m.name,m.module==='elmos'?'Lokales Elmos-Modul · v0.7.172':'Treiber geplant',state.model===m.id,()=>choose('model',m.id)));
+ if(page===2){adaptersFor(state).forEach(a=>choice(grid,adapters[a.id],modelFor(state)?.module==='elmos'?'Im lokalen Elmos-Modul verfügbar':'Kandidat · Kombination nicht validiert',state.adapter===a.id,()=>choose('adapter',a.id)));note(panel,'Die DIY-Boards benötigen eine passende Firmware, korrekte Signalpegel und gegebenenfalls externe Pegelwandler / Lastschalter.');}
+ if(page===3){protocolsFor(state).forEach(p=>choice(grid,protocols[p],modelFor(state)?.module==='elmos'?(p==='spi'?'SPI-Testmodus · Expertenparameter erforderlich':'Im lokalen Modul verfügbar · Hardwarestatus beachten'):'Planung · Adapterunterstützung noch nicht bestätigt',state.protocol===p,()=>choose('protocol',p)));note(panel,'Die Auswahl stellt noch keine Geräteverbindung her.');}
  if(page===4){
   const available=tasksFor(state);
   if(!available.length){note(panel,'Für diese SSC-Kombination ist noch kein Assistent integriert. Keine Verbindung, Kalibrierung oder Programmierung möglich.');const a=el('a','link','Entwicklungsstand auf GitHub');a.href='https://github.com/Vadergit/SSC-Calibration-Studio/tree/main/docs/manufacturers';panel.append(a);}
   else{
    available.forEach(t=>choice(grid,t.name,t.desc,state.task===t.id,()=>choose('task',t.id)));
    const link=handoff(state);
-   const box=el('section','handoff');box.append(el('h3','','Elmos-Einzelassistent'));
-   box.append(el('p','muted','Die offizielle Web-App wird in einem neuen Tab geöffnet. Adapter, Protokoll und Aufgabe dort nochmals auswählen (Sensorbrücken-Rechner öffnet direkt). Das Studio überträgt noch keine Auswahl und führt keine Hardwarebefehle aus.'));
-   if(link){const a=el('a','primary','Elmos-Assistent öffnen ↗');a.href=link.url;a.target='_blank';a.rel='noopener';box.append(a)}
+   const box=el('section','handoff');box.append(el('h3','','Elmos E703.11 · lokales Modul'));
+   box.append(el('p','muted','Die gewählte Aufgabe, der Adapter und das Protokoll werden an das lokal mitgelieferte Elmos-Modul übergeben. USB wird erst auf Wunsch verbunden. Kein neuer Tab und kein iFrame.'));
+   if(link){const a=el('a','primary','Elmos-Assistent öffnen →');a.href=link.url;box.append(a)}
    else box.append(el('p','small muted','Wähle zuerst eine Aufgabe.'));
    panel.append(box);
   }

@@ -1,0 +1,2 @@
+# SSC Universal Bridge
+Initial hardware: ESP32-C3 SuperMini and Arduino Pro Micro (3.3 V / 8 MHz and 5 V / 16 MHz). Current Elmos firmware and binaries are maintained upstream and shipped in the pinned module. Do not flash those onto boards intended for other SSCs without validating electrical compatibility. The common command protocol is not yet implemented; see contract.md. Firmware owns timing, electrical operations and enforced write guards; browser owns calibration algorithms and workflows.
