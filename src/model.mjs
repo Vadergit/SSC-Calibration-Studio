@@ -1,3 +1,4 @@
+import {modules} from './modules/index.mjs';
 export const catalog = [
   {
     "id": "elmos",
@@ -7,31 +8,7 @@ export const catalog = [
         "id": "e70311",
         "name": "E703.11",
         "module": "elmos",
-        "docs": "elmos.md",
-        "adapters": [
-          {
-            "id": "ssp3",
-            "protocols": [
-              "onewire",
-              "i2c",
-              "spi"
-            ]
-          },
-          {
-            "id": "esp32",
-            "protocols": [
-              "onewire",
-              "i2c"
-            ]
-          },
-          {
-            "id": "promicro",
-            "protocols": [
-              "onewire",
-              "i2c"
-            ]
-          }
-        ]
+        "docs": "elmos.md"
       }
     ]
   },
@@ -216,54 +193,13 @@ export const protocols = {
   "zacwire": "ZACwire / OWI",
   "unknown": "Noch zu klären"
 };
-export const tasks = [
-  {
-    "id": "calibration",
-    "name": "Sensor neu abgleichen",
-    "desc": "Druckpunkte, Temperatur, AFE und Koeffizienten"
-  },
-  {
-    "id": "verification",
-    "name": "Nachmessung",
-    "desc": "Kennlinie, Abweichung, Hysterese und Temperatur"
-  },
-  {
-    "id": "output",
-    "name": "Ausgang konfigurieren",
-    "desc": "Ausgangsart, Skalierung und Begrenzungen"
-  },
-  {
-    "id": "diagnostics",
-    "name": "Register / NVM / Diagnose",
-    "desc": "Konfiguration lesen und prüfen"
-  },
-  {
-    "id": "logging",
-    "name": "Test / Logging",
-    "desc": "Messdaten aufnehmen und exportieren"
-  },
-  {
-    "id": "archive",
-    "name": "Archiv",
-    "desc": "Frühere Abgleiche und Messungen"
-  },
-  {
-    "id": "bridge",
-    "name": "Sensorbrücken-Rechner",
-    "desc": "Nullpunkt, Spanne und Temperaturgang"
-  },
-  {
-    "id": "alarms",
-    "name": "Alarme & Fehler",
-    "desc": "Fehlerreaktionen und Alarmgrenzen"
-  }
-];
+export const tasks = [...new Map(Object.values(modules).flatMap(m=>m.tasks).map(t=>[t.id,t])).values()];
 export function modelsFor(id){return catalog.find(x=>x.id===id)?.models??[]}
 export function modelFor(s){return modelsFor(s.manufacturer).find(x=>x.id===s.model)}
-export function adaptersFor(s){const m=modelFor(s);if(!m)return [];return m.adapters??[{id:s.manufacturer==="renesas"?"sscCb":"original",protocols:m.protocols??["unknown"]},{id:"esp32",protocols:m.protocols??["unknown"]},{id:"promicro",protocols:m.protocols??["unknown"]}]}
+export function adaptersFor(s){const m=modelFor(s);if(!m)return [];return modules[m.module]?.adapters??[{id:s.manufacturer==="renesas"?"sscCb":"original",protocols:m.protocols??["unknown"]},{id:"esp32",protocols:m.protocols??["unknown"]},{id:"promicro",protocols:m.protocols??["unknown"]}]}
 export function protocolsFor(s){return adaptersFor(s).find(x=>x.id===s.adapter)?.protocols??[]}
 export function isComplete(s){return protocolsFor(s).includes(s.protocol)}
-export function tasksFor(s){return isComplete(s)&&modelFor(s)?.module==="elmos"?tasks:[]}
+export function tasksFor(s){return isComplete(s)?(modules[modelFor(s)?.module]?.tasks??[]):[]}
 export function initial(){return {manufacturer:"",model:"",adapter:"",protocol:"",task:""}}
 export function select(s,key,value){const order=["manufacturer","model","adapter","protocol","task"];const allowed={manufacturer:()=>catalog.map(x=>x.id),model:()=>modelsFor(s.manufacturer).map(x=>x.id),adapter:()=>adaptersFor(s).map(x=>x.id),protocol:()=>protocolsFor(s),task:()=>tasksFor(s).map(x=>x.id)};if(!allowed[key]||!allowed[key]().includes(value))throw new Error("Ungültige Auswahl");const next={...s,[key]:value};if(s[key]!==value)for(const k of order.slice(order.indexOf(key)+1))next[k]="";return next}
-export function handoff(s){if(!tasksFor(s).some(x=>x.id===s.task))return null;return {url:s.task==="bridge"?"https://vadergit.github.io/ELMOS-E703.11-Calibration-Web-App/nvm-rechner.html":"https://vadergit.github.io/ELMOS-E703.11-Calibration-Web-App/",mode:"standalone",selectionTransferred:false}}
+export function handoff(s){if(!tasksFor(s).some(x=>x.id===s.task))return null;return modules[modelFor(s).module].handoff(s.task)}

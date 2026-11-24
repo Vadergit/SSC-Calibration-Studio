@@ -1,7 +1,7 @@
 # Studio architecture — v0.1.0
 
 ## Workflow
-Manufacturer → exact SSC → adapter → SSC protocol → task. The connection is opened only by an implemented module after explicit user interaction. Offline tasks must eventually be able to bypass physical connection. The current selection UI is operational but deliberately has no USB access.
+Manufacturer → exact SSC → adapter → SSC protocol → task. The connection is opened only by an implemented module after explicit user interaction. Offline tasks must eventually be able to bypass physical connection. The current selection UI is operational but deliberately has no USB access. The actual registry lives in src/modules/index.mjs; the first module in src/modules/elmos.mjs supplies its adapter/protocol matrix, tasks, source version and standalone handoff. New modules register there.
 
 ## First integration: Elmos
 Existing standalone app is the functional reference and remains untouched. Reviewed source: [main snapshot fbd88d4](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App/tree/fbd88d422821151b22a440421133a66fb9983c03), README identifies v0.7.172. The Studio launches the **live official standalone site**, not a pinned copy. Selection is not transferred; users repeat it there. No claims of hardware validation beyond that application's own documentation. Original SSP3: 1-Wire, I2C, SPI; current DIY reference: 1-Wire and I2C, not SPI. This is a declared feature matrix, not a hardware certification.
