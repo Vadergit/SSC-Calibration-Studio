@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.2 — Technical visual refinement
+- Add a conceptual signal-chain diagram, local SVG icons, compact technical cards and status accents.
+- Keep technical descriptions, direct SSC navigation and removed jump links unchanged. Responsive light/dark styling; no new browser dependencies.
+- No changes to calibration modules or firmware.
+
 ## v0.4.1 — Technical project overview
 - Remove redundant introduction jump links and closing call-to-action.
 - Use compact technical descriptions, function lists and project status; retain direct SSC navigation and related project links.
