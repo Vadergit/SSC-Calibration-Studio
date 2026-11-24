@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.4.0 — Project overview and related tools
+- Explain SSC calibration, motivation, target users, available workflows and long-term goals on the start page.
+- Add project roadmap and links to the standalone Elmos application and SensorBridge Emulator, with explicit prototype and hardware-validation status.
+- Keep direct, static manufacturer navigation and the existing calibrator unchanged.
+
 ## v0.3.1 — Static launcher fix
 - Render the complete manufacturer catalog and direct Elmos link into index.html at build time. No browser ES-module loader is required for navigation.
 - Native HTML details for planned SSC lists; optional standalone classic script for theme switching.
