@@ -16,7 +16,7 @@ The Elmos E703.11 web application is the starting point for UI and workflow reus
 
 ## Current implementation
 
-v0.3.0 provides a direct manufacturer / SSC launcher, local pinned Elmos integration, reusable core helpers and a bridge contract. Adapter, protocol and task selection take place inside the individual calibrator. The original Elmos engine handles USB and calibration; shared calibration views, a universal firmware and native Renesas driver are still open. See [Studio architecture](studio-architecture.md).
+v0.5.2 provides direct manufacturer links to seven independent web apps. Elmos supports hardware communication; the other six currently offer simulation only. The local pinned Elmos module, reusable core helpers and bridge contract remain available. Shared calibration views, universal firmware and manufacturer-specific hardware drivers remain open. See [Studio architecture](studio-architecture.md).
 
 ## Software structure
 
