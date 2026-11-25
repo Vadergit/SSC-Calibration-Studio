@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.6 — App version and change timestamps
+- Show declared web-app version, latest Main commit date and relative age on every manufacturer tile.
+- Refresh public source metadata on page load and every 15 minutes; retain known values on errors and label fallback status. No release or deployment date inferred.
+- Preserve status, links, favicon and independent calibration apps.
+
 ## v0.5.5 — Explicit development status
 - Elmos tile marked functional beta with incomplete validation; all six other tiles marked under development and not ready for use.
 - Update the project overview and status descriptions; preserve new-tab navigation and favicon.
