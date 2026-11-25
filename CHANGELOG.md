@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.5 — Explicit development status
+- Elmos tile marked functional beta with incomplete validation; all six other tiles marked under development and not ready for use.
+- Update the project overview and status descriptions; preserve new-tab navigation and favicon.
+- No changes to individual calibrators or firmware.
+
 ## v0.5.4 — SSC favicon
 - Add a dedicated integrated-circuit/signal icon in SVG and 32 px PNG format; explicitly reference it on Studio and documentation pages to avoid inheriting the account-level favicon.
 - No changes to calibration apps or navigation.

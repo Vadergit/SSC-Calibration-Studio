@@ -31,4 +31,7 @@ assert.equal(cards.length,catalog.length);
 for(const maker of catalog){const card=cards.find(c=>c.includes('href="'+manufacturerUrl(maker.id)+'"'));assert.ok(card);assert.ok(card.includes('target="_blank"'));assert.ok(card.includes('rel="noopener noreferrer"'));}
 assert.ok(html.includes('href="./ssc-favicon.svg"'));
 assert.ok(html.includes('href="./ssc-favicon.png"'));
-console.log('Static launcher, favicon and new-tab navigation tests passed');
+const fullCards=[...html.matchAll(/<a class="choice launcher-choice[^>]*>[\s\S]*?<\/a>/g)].map(m=>m[0]);
+assert.equal(fullCards.length,7);
+for(const maker of catalog){const card=fullCards.find(c=>c.includes('href="'+manufacturerUrl(maker.id)+'"'));assert.ok(card);assert.ok(card.includes(maker.id==='elmos'?'Beta · funktionsfähig':'In Entwicklung'));assert.ok(card.includes(maker.id==='elmos'?'Noch nicht vollständig geprüft':'Noch nicht einsatzbereit'));assert.ok(card.includes('target="_blank"'));}
+console.log('Static launcher, maturity status, favicon and new-tab navigation tests passed');

@@ -8,3 +8,6 @@ html[data-theme=dark]{color-scheme:dark;--bg:#101b27;--paper:#192735;--surface:#
 @media(prefers-reduced-motion:reduce){.launcher-choice{transition:none}}
 
 .launcher-grid{align-items:stretch}.launcher-choice{justify-content:flex-start;min-height:136px}.launcher-choice .maker-meta{overflow-wrap:anywhere;line-height:1.55}.launcher-choice .available-label{margin-top:auto;padding-top:3px}.simulation-card .available-label{color:var(--muted)}.simulation-card .maker-icon{background:var(--paper);border:1px solid var(--line);color:var(--muted)}.simulation-card:hover .available-label{color:var(--accent)}
+
+/* Explicit maturity indicators on manufacturer cards. */
+:root{--development-ink:#8a510e}html[data-theme=dark]{--development-ink:#f0c080}.launcher-choice .available-label{font-weight:700}.launcher-choice .development-detail{font-size:12px;color:var(--muted);line-height:1.4;margin-left:42px}.simulation-card .available-label,.simulation-card:hover .available-label{color:var(--development-ink)}.launcher-choice{min-height:152px}
