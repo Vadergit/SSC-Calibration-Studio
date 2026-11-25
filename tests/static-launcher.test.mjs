@@ -19,7 +19,7 @@ assert.ok(html.includes('id="project-title">Projektübersicht'));
 assert.ok(html.includes('id="functions-title">Funktionsumfang'));
 assert.ok(html.includes('id="goals-title">Entwicklungsziele'));
 assert.ok(html.includes('class="signal-chain"'));
-assert.equal((html.match(/class="maker-icon"/g)||[]).length,catalog.length);
+assert.equal((html.match(/class="maker-icon maker-monogram"/g)||[]).length,catalog.length);
 assert.ok(html.includes('aria-label="Vereinfachte Signalkette: Messbrücke, AFE und ADC, DSP, Sensorausgang"'));
 assert.ok(html.includes('class="diagram-heading"'));
 assert.ok(html.includes('Prinzipdarstellung'));
@@ -36,4 +36,6 @@ assert.equal(fullCards.length,7);
 for(const maker of catalog){const card=fullCards.find(c=>c.includes('href="'+manufacturerUrl(maker.id)+'"'));assert.ok(card);assert.ok(card.includes(maker.id==='elmos'?'Beta · funktionsfähig':'In Entwicklung'));assert.ok(card.includes(maker.id==='elmos'?'Noch nicht vollständig geprüft':'Noch nicht einsatzbereit'));assert.ok(card.includes('target="_blank"'));}
 for(const card of fullCards){assert.ok(card.includes('class="app-version"'));assert.ok(card.includes('class="app-changed"'));assert.ok(card.includes('data-repo='));assert.ok(card.includes('Letzte Änderung (Main)'));}
 assert.ok(html.includes('src/app-version-live.js'));
-console.log('Static launcher, versions, maturity status, favicon and new-tab navigation tests passed');
+assert.ok(!html.includes('class="app-change-line"'));
+assert.ok(fullCards.every(card=>card.includes('class="maker-icon maker-monogram"')));
+console.log('Compact manufacturer cards, versions, maturity status and navigation passed');
