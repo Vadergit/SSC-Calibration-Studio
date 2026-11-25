@@ -42,7 +42,8 @@ function render(card,v){
  state.set(card,v);
  card.querySelector('.app-version').textContent=v.version?'v'+v.version:'Version nicht erkannt';
  const time=card.querySelector('.app-changed');time.dateTime=v.date;
- time.textContent=new Intl.DateTimeFormat('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',timeZoneName:'short'}).format(new Date(v.date));
+ time.title='Letzte Änderung (Main) · '+v.date+' · '+v.sha.slice(0,7);
+ time.textContent=new Intl.DateTimeFormat('de-CH',{timeZone:'Europe/Zurich',day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit',}).format(new Date(v.date));
  card.querySelector('.app-age').textContent=relative(v.date);
 }
 async function request(url,kind){

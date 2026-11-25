@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.7 — Compact manufacturer cards
+- Reduce card height, show version and relative age on one row, keep timestamp and maturity visible, move long model lists to tooltips.
+- Add a manufacturer identity registry with neutral monograms and support for local approved logo assets. No third-party logos published without confirmed permission.
+- Preserve live version refresh and new-tab links.
+
 ## v0.5.6 — App version and change timestamps
 - Show declared web-app version, latest Main commit date and relative age on every manufacturer tile.
 - Refresh public source metadata on page load and every 15 minutes; retain known values on errors and label fallback status. No release or deployment date inferred.
