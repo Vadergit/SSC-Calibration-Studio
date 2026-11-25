@@ -11,3 +11,6 @@ html[data-theme=dark]{color-scheme:dark;--bg:#101b27;--paper:#192735;--surface:#
 
 /* Explicit maturity indicators on manufacturer cards. */
 :root{--development-ink:#8a510e}html[data-theme=dark]{--development-ink:#f0c080}.launcher-choice .available-label{font-weight:700}.launcher-choice .development-detail{font-size:12px;color:var(--muted);line-height:1.4;margin-left:42px}.simulation-card .available-label,.simulation-card:hover .available-label{color:var(--development-ink)}.launcher-choice{min-height:152px}
+
+/* Version metadata: compact, clearly distinct from maturity status. */
+.launcher-choice{min-height:216px}.app-release-meta{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;width:100%;border-top:1px solid var(--line);padding-top:9px;margin-top:3px;font-size:11px;color:var(--muted);font-variant-numeric:tabular-nums}.app-version-line{display:flex;align-items:baseline;justify-content:space-between;gap:8px;grid-column:1/-1}.app-version{color:var(--ink);font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:12px;overflow-wrap:anywhere}.app-change-line{grid-column:1/-1}.app-changed{grid-column:1/-1;color:var(--ink);font-size:12px}.app-age{grid-column:1/-1;color:var(--muted)}.app-age:empty{display:none}.version-refresh-status{margin-bottom:0}
