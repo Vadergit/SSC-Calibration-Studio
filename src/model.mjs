@@ -226,6 +226,7 @@ export function calibratorUrl(manufacturer,model){
  return url.href;
 }
 export function manufacturerUrl(manufacturer){
- const entries=modelsFor(manufacturer);
- return entries.length===1?calibratorUrl(manufacturer,entries[0].id):null;
+ if(manufacturer==='elmos')return 'https://vadergit.github.io/ELMOS-E703.11-Calibration-Web-App/';
+ const repository=Object.hasOwn(simulationRepositories,manufacturer)?simulationRepositories[manufacturer]:null;
+ return repository?'https://vadergit.github.io/'+repository+'/':null;
 }

@@ -1,5 +1,10 @@
 # Changelog
 
+## v0.5.2 — Direct manufacturer web apps
+- All seven manufacturer cards link directly to their independent calibration web apps; model selection takes place inside the target app.
+- Keep simulation status explicit for six new apps and retain the pinned local Elmos reference separately.
+- Update documentation and route checks; calibration and firmware unchanged.
+
 ## v0.5.1 — Technical documentation pages
 - Format project documentation, architecture, roadmap, hardware/firmware and manufacturer references as static HTML with shared Studio styling, navigation, section links, tables and checklists.
 - Preserve Markdown source documents and their original language. Generate with `node scripts/build-docs.mjs`.

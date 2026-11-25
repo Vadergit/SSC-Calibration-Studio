@@ -6,11 +6,11 @@ The goal is a single browser-based application for configuring, calibrating, pro
 
 The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App) is the starting point for the shared user interface and calibration workflow.
 
-## Studio v0.5.1
+## Studio v0.5.2
 
 [Open Studio](https://vadergit.github.io/SSC-Calibration-Studio/) · [Architecture and module integration](docs/studio-architecture.md) · [Changelog](CHANGELOG.md)
 
-Choose a manufacturer or SSC to open its calibrator directly. Elmos E703.11 opens the pinned local v0.7.172 module in the same tab with no adapter, protocol or task preselected by Studio. These choices belong to the calibrator. The other 28 SSC entries open six independent public web apps in simulation mode. Model-specific hardware support is planned. The existing guarded Elmos engine handles USB/NVM only after user action. See [architecture](docs/studio-architecture.md).
+Every manufacturer card opens its independent public calibration web app directly in the same tab. Device, adapter and task selection take place within that app. Elmos opens the standalone hardware calibrator; the pinned local v0.7.172 reference remains available under Related projects. The six other manufacturer apps provide simulation only; hardware drivers remain planned. See [architecture](docs/studio-architecture.md).
 
 ## Related projects
 
@@ -23,7 +23,7 @@ Select a **manufacturer** to open its detailed SSC lists, communication groups, 
 
 | Manufacturer | SSC models / families | Progress |
 | --- | --- | --- |
-| **[Elmos](docs/manufacturers/elmos.md)** | E703.11 | Local v0.7.172 integration; hardware verification open |
+| **[Elmos](docs/manufacturers/elmos.md)** | E703.11 | [Web app](https://vadergit.github.io/ELMOS-E703.11-Calibration-Web-App/) · pinned local reference retained |
 | **[Renesas / IDT](docs/manufacturers/renesas-idt.md)** | ZSC31010, ZSC31014, ZSC31015, ZSC31050, ZSC31150, ZSSC3154, ZSSC3240, ZSSC3281 | [Simulation](https://vadergit.github.io/Renesas-IDT-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/Renesas-IDT-SSC-Calibration-Web-App) |
 | **[NOVOSENSE](docs/manufacturers/novosense.md)** | NSA2200, NSA2300, NSA2302, NSA2860(X), NSC2860X, NSA/NSC9260(X), NSC9262, NSC9264 | [Simulation](https://vadergit.github.io/NOVOSENSE-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/NOVOSENSE-SSC-Calibration-Web-App) |
 | **[Texas Instruments](docs/manufacturers/texas-instruments.md)** | PGA300, PGA302, PGA305, PGA309 | [Simulation](https://vadergit.github.io/Texas-Instruments-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/Texas-Instruments-SSC-Calibration-Web-App) |
@@ -43,4 +43,4 @@ The application will use **interchangeable hardware adapters** for original manu
 
 ## Project status
 
-**v0.5.1 — Compact technical project overview, related tools, direct manufacturer / SSC launcher and local Elmos module.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. The launcher is generated static HTML; navigation works without JavaScript. Regenerate with `node scripts/build-launcher.mjs` after modifying the catalog. Generate the styled documentation pages from the original Markdown with `node scripts/build-docs.mjs`. Run `node tests/docs.test.mjs`, `node tests/static-launcher.test.mjs`, `node tests/launcher.test.mjs`, `node tests/model.test.mjs`, `node tests/core.test.mjs`, `node tests/bridge.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.
+**v0.5.2 — Compact technical project overview, related tools, direct manufacturer / SSC launcher and local Elmos module.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. The launcher is generated static HTML; navigation works without JavaScript. Regenerate with `node scripts/build-launcher.mjs` after modifying the catalog. Generate the styled documentation pages from the original Markdown with `node scripts/build-docs.mjs`. Run `node tests/docs.test.mjs`, `node tests/static-launcher.test.mjs`, `node tests/launcher.test.mjs`, `node tests/model.test.mjs`, `node tests/core.test.mjs`, `node tests/bridge.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.
