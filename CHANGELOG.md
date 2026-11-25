@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.4 — SSC favicon
+- Add a dedicated integrated-circuit/signal icon in SVG and 32 px PNG format; explicitly reference it on Studio and documentation pages to avoid inheriting the account-level favicon.
+- No changes to calibration apps or navigation.
+
 ## v0.5.3 — New-tab launcher
 - All seven manufacturer cards open their web app in a new browser tab using native links with noopener and noreferrer. The Studio remains open.
 - Documentation navigation and calibration apps unchanged.

@@ -29,4 +29,6 @@ assert.ok(!html.includes('href="./docs/development-roadmap.md"'));
 const cards=[...html.matchAll(/<a class="choice launcher-choice[^>]+>/g)].map(m=>m[0]);
 assert.equal(cards.length,catalog.length);
 for(const maker of catalog){const card=cards.find(c=>c.includes('href="'+manufacturerUrl(maker.id)+'"'));assert.ok(card);assert.ok(card.includes('target="_blank"'));assert.ok(card.includes('rel="noopener noreferrer"'));}
-console.log('Static launcher and new-tab navigation tests passed');
+assert.ok(html.includes('href="./ssc-favicon.svg"'));
+assert.ok(html.includes('href="./ssc-favicon.png"'));
+console.log('Static launcher, favicon and new-tab navigation tests passed');
