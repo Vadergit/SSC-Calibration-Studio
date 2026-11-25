@@ -205,11 +205,25 @@ export function initial(){return emptySelection()}
 export function select(s,key,value){const allowed={manufacturer:()=>catalog.map(x=>x.id),model:()=>modelsFor(s.manufacturer).map(x=>x.id),adapter:()=>adaptersFor(s).map(x=>x.id),protocol:()=>protocolsFor(s),task:()=>tasksFor(s).map(x=>x.id)};return changeSelection(s,key,value,allowed[key]?.()??[])}
 export function handoff(s){if(!tasksFor(s).some(x=>x.id===s.task))return null;return modules[modelFor(s).module].handoff(s)}
 
+const simulationRepositories = {
+ "renesas": "Renesas-IDT-SSC-Calibration-Web-App",
+ "novosense": "NOVOSENSE-SSC-Calibration-Web-App",
+ "ti": "Texas-Instruments-SSC-Calibration-Web-App",
+ "melexis": "Melexis-SSC-Calibration-Web-App",
+ "adi": "Analog-Devices-Maxim-SSC-Calibration-Web-App",
+ "jhm": "Jiuhao-SSC-Calibration-Web-App"
+};
+
 // Launcher routes depend only on the SSC, never on hardware or task selection.
 export function calibratorUrl(manufacturer,model){
  const entry=modelsFor(manufacturer).find(m=>m.id===model);
  const module=entry?.module?modules[entry.module]:null;
- return module?.entryUrl??null;
+ if (module?.entryUrl) return module.entryUrl;
+ const repository = simulationRepositories[manufacturer];
+ if (!entry || !repository) return null;
+ const url = new URL(repository + '/', 'https://vadergit.github.io/');
+ url.searchParams.set('model', entry.id);
+ return url.href;
 }
 export function manufacturerUrl(manufacturer){
  const entries=modelsFor(manufacturer);

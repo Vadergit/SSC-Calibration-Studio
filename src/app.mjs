@@ -23,14 +23,14 @@ function render(){
  if(maker){
   for(const m of modelsFor(maker.id)){
    const url=calibratorUrl(maker.id,m.id);
-   grid.append(choice({name:m.name,detail:url?'Kalibrierassistent öffnen':'In Vorbereitung',url,planned:!url}));
+   grid.append(choice({name:m.name,detail:url?'Simulation öffnen':'In Vorbereitung',url,planned:!url}));
   }
   if(!maker.models.some(m=>calibratorUrl(maker.id,m.id)))panel.append(el('p','muted small','Für diesen Hersteller ist noch kein Kalibrierassistent verfügbar.'));
  }else{
   for(const m of catalog){
    const url=manufacturerUrl(m.id);
    const count=m.models.filter(c=>calibratorUrl(m.id,c.id)).length;
-   const detail=url?m.models[0].name+' · Kalibrierassistent öffnen':count?count+' verfügbar · '+m.models.length+' SSCs':m.models.length+' SSCs / Gruppen · In Vorbereitung';
+   const detail=url?m.models[0].name+(m.id==='elmos'?' · Kalibrierassistent öffnen':' · Simulation öffnen'):count?count+' SSCs / Gruppen · Simulation':m.models.length+' SSCs / Gruppen · In Vorbereitung';
    grid.append(choice({name:m.name,detail,url,action:url?null:()=>show(m.id),planned:count===0}));
   }
  }

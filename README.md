@@ -10,7 +10,7 @@ The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELM
 
 [Open Studio](https://vadergit.github.io/SSC-Calibration-Studio/) · [Architecture and module integration](docs/studio-architecture.md) · [Changelog](CHANGELOG.md)
 
-Choose a manufacturer or SSC to open its calibrator directly. Elmos E703.11 opens the pinned local v0.7.172 module in the same tab with no adapter, protocol or task preselected by Studio. These choices belong to the calibrator. Other SSCs are planning entries. The existing guarded Elmos engine handles USB/NVM only after user action. See [architecture](docs/studio-architecture.md).
+Choose a manufacturer or SSC to open its calibrator directly. Elmos E703.11 opens the pinned local v0.7.172 module in the same tab with no adapter, protocol or task preselected by Studio. These choices belong to the calibrator. The other 28 SSC entries open six independent public web apps in simulation mode. Model-specific hardware support is planned. The existing guarded Elmos engine handles USB/NVM only after user action. See [architecture](docs/studio-architecture.md).
 
 ## Related projects
 
@@ -24,12 +24,12 @@ Select a **manufacturer** to open its detailed SSC lists, communication groups, 
 | Manufacturer | SSC models / families | Progress |
 | --- | --- | --- |
 | **[Elmos](docs/manufacturers/elmos.md)** | E703.11 | Local v0.7.172 integration; hardware verification open |
-| **[Renesas / IDT](docs/manufacturers/renesas-idt.md)** | ZSC31010, ZSC31014, ZSC31015, ZSC31050, ZSC31150, ZSSC3154, ZSSC3240, ZSSC3281 | Planned |
-| **[NOVOSENSE](docs/manufacturers/novosense.md)** | NSA2200, NSA2300, NSA2302, NSA2860(X), NSC2860X, NSA/NSC9260(X), NSC9262, NSC9264 | Planned |
-| **[Texas Instruments](docs/manufacturers/texas-instruments.md)** | PGA300, PGA302, PGA305, PGA309 | Planned |
-| **[Melexis](docs/manufacturers/melexis.md)** | MLX90328, MLX90329 | Planned |
-| **[Analog Devices / Maxim](docs/manufacturers/analog-devices.md)** | MAX1454 | Planned |
-| **[Jiuhao Microelectronics (JHM)](docs/manufacturers/jiuhao.md)** | JHM1101–1103, JHM1200/1203, JHM140X, JHM150X, JHM2102 | Planned |
+| **[Renesas / IDT](docs/manufacturers/renesas-idt.md)** | ZSC31010, ZSC31014, ZSC31015, ZSC31050, ZSC31150, ZSSC3154, ZSSC3240, ZSSC3281 | [Simulation](https://vadergit.github.io/Renesas-IDT-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/Renesas-IDT-SSC-Calibration-Web-App) |
+| **[NOVOSENSE](docs/manufacturers/novosense.md)** | NSA2200, NSA2300, NSA2302, NSA2860(X), NSC2860X, NSA/NSC9260(X), NSC9262, NSC9264 | [Simulation](https://vadergit.github.io/NOVOSENSE-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/NOVOSENSE-SSC-Calibration-Web-App) |
+| **[Texas Instruments](docs/manufacturers/texas-instruments.md)** | PGA300, PGA302, PGA305, PGA309 | [Simulation](https://vadergit.github.io/Texas-Instruments-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/Texas-Instruments-SSC-Calibration-Web-App) |
+| **[Melexis](docs/manufacturers/melexis.md)** | MLX90328, MLX90329 | [Simulation](https://vadergit.github.io/Melexis-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/Melexis-SSC-Calibration-Web-App) |
+| **[Analog Devices / Maxim](docs/manufacturers/analog-devices.md)** | MAX1454 | [Simulation](https://vadergit.github.io/Analog-Devices-Maxim-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/Analog-Devices-Maxim-SSC-Calibration-Web-App) |
+| **[Jiuhao Microelectronics (JHM)](docs/manufacturers/jiuhao.md)** | JHM1101–1103, JHM1200/1203, JHM140X, JHM150X, JHM2102 | [Simulation](https://vadergit.github.io/Jiuhao-SSC-Calibration-Web-App/) · [Repository](https://github.com/Vadergit/Jiuhao-SSC-Calibration-Web-App) |
 
 **Progress tracking:** The linked manufacturer pages contain checkboxes for each SSC and its related device/communication group. A chip or group is marked complete only after the relevant functions have been tested on hardware. Shared evaluation-board support does not automatically mean identical protocols or commands.
 
