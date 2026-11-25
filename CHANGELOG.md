@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.3 — New-tab launcher
+- All seven manufacturer cards open their web app in a new browser tab using native links with noopener and noreferrer. The Studio remains open.
+- Documentation navigation and calibration apps unchanged.
+
 ## v0.5.2 — Direct manufacturer web apps
 - All seven manufacturer cards link directly to their independent calibration web apps; model selection takes place inside the target app.
 - Keep simulation status explicit for six new apps and retain the pinned local Elmos reference separately.
