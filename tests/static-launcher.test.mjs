@@ -26,4 +26,7 @@ assert.ok(html.includes('Prinzipdarstellung'));
 assert.ok(html.includes('class="release-dot"'));
 for(const path of ['development-roadmap','studio-architecture','firmware-and-hardware'])assert.ok(html.includes('href="./docs/'+path+'.html"'));
 assert.ok(!html.includes('href="./docs/development-roadmap.md"'));
-console.log('Static launcher and engineering interface tests passed');
+const cards=[...html.matchAll(/<a class="choice launcher-choice[^>]+>/g)].map(m=>m[0]);
+assert.equal(cards.length,catalog.length);
+for(const maker of catalog){const card=cards.find(c=>c.includes('href="'+manufacturerUrl(maker.id)+'"'));assert.ok(card);assert.ok(card.includes('target="_blank"'));assert.ok(card.includes('rel="noopener noreferrer"'));}
+console.log('Static launcher and new-tab navigation tests passed');

@@ -6,11 +6,11 @@ The goal is a single browser-based application for configuring, calibrating, pro
 
 The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App) is the starting point for the shared user interface and calibration workflow.
 
-## Studio v0.5.2
+## Studio v0.5.3
 
 [Open Studio](https://vadergit.github.io/SSC-Calibration-Studio/) · [Architecture and module integration](docs/studio-architecture.md) · [Changelog](CHANGELOG.md)
 
-Every manufacturer card opens its independent public calibration web app directly in the same tab. Device, adapter and task selection take place within that app. Elmos opens the standalone hardware calibrator; the pinned local v0.7.172 reference remains available under Related projects. The six other manufacturer apps provide simulation only; hardware drivers remain planned. See [architecture](docs/studio-architecture.md).
+Every manufacturer card opens its independent public calibration web app directly in a new browser tab. Device, adapter and task selection take place within that app. Elmos opens the standalone hardware calibrator; the pinned local v0.7.172 reference remains available under Related projects. The six other manufacturer apps provide simulation only; hardware drivers remain planned. See [architecture](docs/studio-architecture.md).
 
 ## Related projects
 
@@ -43,4 +43,4 @@ The application will use **interchangeable hardware adapters** for original manu
 
 ## Project status
 
-**v0.5.2 — Compact technical project overview, related tools, direct manufacturer / SSC launcher and local Elmos module.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. The launcher is generated static HTML; navigation works without JavaScript. Regenerate with `node scripts/build-launcher.mjs` after modifying the catalog. Generate the styled documentation pages from the original Markdown with `node scripts/build-docs.mjs`. Run `node tests/docs.test.mjs`, `node tests/static-launcher.test.mjs`, `node tests/launcher.test.mjs`, `node tests/model.test.mjs`, `node tests/core.test.mjs`, `node tests/bridge.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.
+**v0.5.3 — Compact technical project overview, related tools, direct manufacturer / SSC launcher and local Elmos module.** Shared UI extraction and hardware validation remain open. Serve the repository root as a static site; for GitHub Pages select main / root. The launcher is generated static HTML; navigation works without JavaScript. Regenerate with `node scripts/build-launcher.mjs` after modifying the catalog. Generate the styled documentation pages from the original Markdown with `node scripts/build-docs.mjs`. Run `node tests/docs.test.mjs`, `node tests/static-launcher.test.mjs`, `node tests/launcher.test.mjs`, `node tests/model.test.mjs`, `node tests/core.test.mjs`, `node tests/bridge.test.mjs`, and `node tests/integration.test.mjs`. Refresh the pinned Elmos package with `node scripts/build-elmos.mjs` only after reviewing the source revision.
