@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.5.8 — Manufacturer title legibility
+- Increase manufacturer title size from 14 to 18 px with a semibold-to-bold weight of 700. Allow long manufacturer names to wrap without clipping.
+- Keep compact card metadata, maturity indicators and new-tab navigation unchanged.
+
 ## v0.5.7 — Compact manufacturer cards
 - Reduce card height, show version and relative age on one row, keep timestamp and maturity visible, move long model lists to tooltips.
 - Add a manufacturer identity registry with neutral monograms and support for local approved logo assets. No third-party logos published without confirmed permission.
