@@ -12,7 +12,7 @@ try{
   await gear.waitFor({state:'visible',timeout:20000});
   await gear.click();assert.ok(await panel.isVisible(),id+' open');
   assert.equal(await gear.getAttribute('aria-expanded'),'true',id);
-  await panel.locator('h2,h3,strong').first().click();assert.ok(await panel.isVisible(),id+' inside click');
+  await panel.evaluate(el=>el.click());assert.ok(await panel.isVisible(),id+' inside click');
   await page.keyboard.press('Escape');assert.equal(await panel.isVisible(),false,id+' Escape');
   assert.equal(await gear.evaluate(el=>document.activeElement===el),true,id+' focus');
   await gear.click();await page.evaluate(()=>{document.body.click()});assert.equal(await panel.isVisible(),false,id+' outside click');

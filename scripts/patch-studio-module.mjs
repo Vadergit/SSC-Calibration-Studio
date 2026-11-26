@@ -4,7 +4,7 @@ export const commonStyles=['guided.css','interface.css','theme.css','settings-re
 const settings="const studioSettings=window.SSC_UI.installSettingsPanel({panel:$('settingsPanel'),trigger:$('settingsOpen')});";
 export function patchStudioFile(id,path,content){
  if(path==='index.html'||(id==='novosense'&&['classic.html','guided.html'].includes(path))){
-  content=replaceOnce(content,'</head>','<script src="../../packages/ui/settings.js?v=0.1.0"></script></head>');
+  if(id==='ti'&&!content.includes('</head>'))content=replaceOnce(content,'<link rel="stylesheet" href="./style.css">','<link rel="stylesheet" href="./style.css"><script src="../../packages/ui/settings.js?v=0.1.0"></script>');else content=replaceOnce(content,'</head>','<script src="../../packages/ui/settings.js?v=0.1.0"></script></head>');
   content=content.replace(/href="(?:\.\/|master\/)?(guided|interface|theme|settings-refresh|verification-guide|classic-compact|eeprom-config-overview|nvm-reconstruction|calibration-graph|archive-photos)\.css(?:\?[^"]*)?"/g,(_,name)=>'href="../../packages/ui/styles/'+name+'.css?v=0.1.0"');
   if(id==='adi'){content=replaceOnce(content,'<dialog id="settingsDialog" aria-labelledby="settingsTitle">','<section class="settings-panel" id="settingsDialog" hidden aria-labelledby="settingsTitle">');content=replaceOnce(content,'</dialog><script type="module" src="./app.mjs">','</section><script type="module" src="./app.mjs">');}
  }
