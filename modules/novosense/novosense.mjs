@@ -94,3 +94,5 @@ $('guidedHomeTop').onclick=home;$('guidedLaunchTop').hidden=false;$('guidedLaunc
 resetLab();
 if(navigator.serial)navigator.serial.addEventListener('disconnect',e=>{if(bridge.port&&(e.target===bridge.port||e.port===bridge.port)){stopLive();void bridge.close();device=null;boardInfo=null;latest=null;snapshot=null;render();updateHeader();message('USB-Verbindung getrennt.','warn')}});
 render();
+
+window.SSC_STUDIO_NATIVE={model:()=>s.model,board:()=>selectedAdapter,canSwitch:()=>bridge.closed&&!hardwareBusy&&!recording,hasDraft:()=>s.points.length>0||s.log.length>0,prepare(selection){if(bridge.closed)selectedAdapter=selection.board;render()},open(selection){if(bridge.closed)selectedAdapter=selection.board;task('connection')}};

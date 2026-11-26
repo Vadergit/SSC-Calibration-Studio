@@ -37,6 +37,7 @@ export function patchStudioFile(id,path,content){
   content=content.slice(0,start)+" const studioSettings=window.SSC_UI.installSettingsPanel({panel:$('settingsPanel'),trigger:$('settingsOpen'),onOpen:()=>{$('settingsSampleCount').value=$('calSampleCount').value;void window.ELMOS_ARCHIVE?.refreshFolderSettings?.()}});\n function toggleSettings(open){if(open)studioSettings.open();else studioSettings.close()}\n"+content.slice(end);
  }
  if(path==='index.html')content=replaceOnce(content,'<script src="../../packages/ui/settings.js?v=0.1.0"></script>','<script src="../../packages/ui/settings.js?v=0.1.0"></script>'+studioConnectionScript);
+ if(id==='renesas'&&path==='app.mjs')content=replaceOnce(content,'void hardware.reconnect();',"if(!location.pathname.includes('/modules/renesas/'))void hardware.reconnect();");
  if(nativeHooks[id]?.path===path)content+='\n'+nativeHooks[id].code+'\n';
  if(id==='ti'&&path==='app.mjs')content+='\n'+tiFallback+'\n';
  return content;

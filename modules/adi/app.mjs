@@ -146,3 +146,5 @@ $('afeSuggest').onclick=()=>{try{let l=afeEndpoints.low,h=afeEndpoints.high;if(!
 $('dmmCheck').onclick=()=>{try{let result=outputCheck(num('dmmRef'),num('dmmMeasured'),num('lo'),num('hi'),num('outLo'),num('outHi'),num('tol'));dmmChecks.push({...result,unit:$('outUnit').value,time:new Date().toISOString()});txt('dmmResult',JSON.stringify(dmmChecks,null,2));}catch(e){txt('dmmResult',e.message)}};
 $('dmmExport').onclick=()=>download('max40109-output-verification.csv','time;reference;measured;expected;errorPercentFS;pass;unit\n'+dmmChecks.map(x=>[x.time,x.reference,x.measured,x.expected,x.error,x.pass,x.unit].map(csvCell).join(';')).join('\n'),'text/csv');
 updateModel();row('points',{reference:0,temperature:25});row('points',{reference:100,temperature:25});show(0);
+
+window.SSC_STUDIO_NATIVE={model:()=>model().id,board:()=>$('adapter').value,canSwitch:()=>!bridge.port&&!bridge.busy&&!operation&&!readSequence,hasDraft:()=>!!fitResult||checks.length>0,prepare(s){if(!bridge.port){$('adapter').value=s.board;$('adapter').dispatchEvent(new Event('change',{bubbles:true}))}},open(s){if(!bridge.port)this.prepare(s);returnPage=page;show(11)}};

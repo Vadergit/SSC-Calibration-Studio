@@ -68,3 +68,5 @@ else if(task==='archive'){tool('Archiv','Lokal im Browser gespeicherte Offline-B
 }
 document.querySelectorAll('[data-gw-task]').forEach(b=>b.onclick=()=>openTask(b.dataset.gwTask));
 
+
+window.SSC_STUDIO_NATIVE={model:()=>model.value,board:()=>$('adapter').value,canSwitch:()=>!window.JHM_PULSE_BUSY&&!window.JHM_NATIVE_BUSY&&$('hwDisconnect').disabled&&$('hwConnect').disabled===false,hasDraft:()=>step!==0||!$('toolPage').hidden,prepare(s){$('adapter').value=s.board;$('adapter').dispatchEvent(new Event('change',{bubbles:true}));if(s.board==='esp-pwm'||s.board==='pro-pwm')$('owiBoard').value=s.board==='esp-pwm'?'ESP32-C3':'PRO-MICRO'},open(s){if(this.canSwitch())this.prepare(s);$('connectionDialog').showModal()}};

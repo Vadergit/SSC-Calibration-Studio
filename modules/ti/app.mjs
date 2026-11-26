@@ -110,3 +110,5 @@ get('export').addEventListener('click', () => {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 });
 selectModels(manufacturer, query.get('model'));
+
+window.SSC_STUDIO_NATIVE={model:()=>model.value,board:()=> 'offline',canSwitch:()=>true,hasDraft:()=>!!report||Array.from(body.querySelectorAll('input')).some(x=>x.value!==''),open(){get('device').scrollIntoView({block:'start'})}};
