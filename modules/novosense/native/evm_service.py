@@ -8,6 +8,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from urllib.parse import urlsplit
 
 ROOT = Path(__file__).resolve().parent.parent
+import sys
+sys.path.insert(0, str(ROOT.parent.parent / 'packages' / 'host'))
+from studio_assets import serve_shared
+
 STATIC = {".html", ".css", ".js", ".mjs", ".json", ".md", ".ino", ".txt", ".svg", ".png", ".ico"}
 def crc8(data):
     c = 0
@@ -182,6 +186,7 @@ def main():
         def do_GET(self):
             if not self.allowed_host():
                 self.send_error(403);return
+            if serve_shared(self, ROOT, self.path): return
             name=urlsplit(self.path).path.lstrip("/") or "index.html"
             p=(ROOT/name).resolve()
             if ROOT not in p.parents or any(x.startswith(".") for x in Path(name).parts) or p.suffix not in STATIC or not p.is_file():

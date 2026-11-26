@@ -5,6 +5,10 @@ import argparse, json, math, os, statistics, sys
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
+import sys
+sys.path.insert(0, str(ROOT.parent.parent / 'packages' / 'host'))
+from studio_assets import serve_shared
+
 MODELS=('mlx90328','mlx90329')
 PARAM_NAMES=('O0','O1','O2','O3','G0','G1','G2','G3','L0','L1','Tpress Select','BRIDGE_SEL','CG','CO','PFLT','SSF')
 def finite(x):
@@ -91,6 +95,7 @@ def handler_for(backend,port):
     class Handler(SimpleHTTPRequestHandler):
         def __init__(self,*a,**kw): super().__init__(*a,directory=str(ROOT),**kw)
         def do_GET(self):
+            if serve_shared(self, ROOT, self.path): return
             if self.path.split('?')[0].startswith('/api/'): self.send_error(405); return
             # Only the published web assets, no local profiles or SDK files.
             path=self.path.split('?')[0]

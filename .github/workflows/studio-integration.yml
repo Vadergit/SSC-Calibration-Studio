@@ -26,6 +26,10 @@ jobs:
       - name: Existing and shared unit tests
         run: |
           for f in tests/*.test.mjs; do node "$f" || exit 1; done
+      - name: Native host regression and Python syntax
+        run: |
+          python3 -B tests/native-host.test.py
+          python3 -c "import ast,pathlib; [ast.parse(p.read_text(encoding='utf-8')) for p in pathlib.Path('modules').rglob('*.py')]"
       - name: Verify committed release snapshots on main
         if: github.ref == 'refs/heads/main'
         run: git diff --exit-code -- modules packages/ui/styles index.html README.html CHANGELOG.html docs
