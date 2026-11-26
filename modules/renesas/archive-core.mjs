@@ -46,10 +46,10 @@ export function mergeArchive(existing,imported){
 
 export function archiveSummary(r){
  const points=archivePoints(r),checks=archiveChecks(r),logs=Array.isArray(r.logs)?r.logs.filter(Boolean):[];
- const groups=[...points,...checks],samples=points.map(x=>x.count??x.samples?.length),rawSamples=logs.length?logs.length:samples.length&&samples.every(x=>Number.isInteger(x)&&x>=0)&&!checks.length?samples.reduce((a,b)=>a+b,0):null;
+ const groups=[...points,...checks],sampleCount=x=>x.samples?.length??x.sampleCount??x.count??(Number.isFinite(x.raw)&&Number.isFinite(x.tempCode)&&x.time?1:null),samples=[...groups,...logs].map(sampleCount),known=samples.filter(x=>Number.isInteger(x)&&x>=0),rawSamples=samples.length&&known.length===samples.length?known.reduce((a,b)=>a+b,0):null,knownRawSamples=known.length?known.reduce((a,b)=>a+b,0):null;
  const failed=checks.filter(x=>x.pass===false).length;
  const errors=Array.isArray(r.errors)?r.errors.length:Number.isInteger(r.errors)&&r.errors>=0?r.errors:null;
  const start=r.started??r.startedAt??r.plan?.started,end=r.ended??r.endedAt??r.created;
  const durationMs=Number.isFinite(Date.parse(start))&&Number.isFinite(Date.parse(end))&&Date.parse(end)>=Date.parse(start)?Date.parse(end)-Date.parse(start):null;
- return {measurementPoints:groups.length||logs.length,rawSamples,failed,errors,durationMs,start,end};
+ return {measurementPoints:groups.length||logs.length,rawSamples,knownRawSamples,failed,errors,durationMs,start,end};
 }

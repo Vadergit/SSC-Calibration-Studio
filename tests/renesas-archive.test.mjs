@@ -15,6 +15,7 @@ console.log('Archive legacy classification, filtering, CSV and import checks pas
 import {archiveSummary} from '../modules/renesas/archive-core.mjs';
 assert.equal(archiveSummary(r).measurementPoints,4);
 assert.equal(archiveSummary(r).rawSamples,null);
+assert.equal(archiveSummary(r).knownRawSamples,8);
 assert.equal(archiveSummary(r).durationMs,null);
 assert.equal(archiveSummary({...r,verification:undefined}).rawSamples,8);
 assert.equal(archiveSummary({...r,started:'2026-11-26T13:39:07Z'}).durationMs,60000);
