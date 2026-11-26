@@ -110,3 +110,9 @@ Kompakter Vorschaukopf mit PDF/JSON, vier Ergebnis-KPI, Geräteinformationen, DS
 ## v0.7.28 – Vollständige Aufzeichnungsdaten
 
 Neue geführte Abgleiche und Nachmessungen erfassen Start/Ende, bestätigtes Communication Board und Firmwareantwort, Web-Version, verfügbare Kommunikationsadresse, Fehlerereignisse und tatsächlich aufgenommene Einzelmesswerte. Alte Protokolle bleiben unverändert; bekannte Rohsamplezahlen werden als Mindestwert gezeigt, wenn weitere Samples nicht dokumentiert sind. Chip-UID/USER-ID werden nicht aus USB-Seriennummer oder EEPROM-Inhalten geraten; der vorhandene Treiber liest sie nicht aus. Keine Änderung an Registerprogrammierung oder Kalibrieralgorithmen.
+
+## v0.7.29 – Rückverfolgbarkeit
+
+Append-only IndexedDB-Journal für aktive geführte Aufgaben: Start/Ende, Einstellungen, bestätigte EEPROM-Lesungen, Schreibplan, Soll/Ist-Schreibdaten, Fehler, einzelne Rohmessungen, Livewerte, Kommunikationsereignisse und wiederholte Prüfversuche. JSON-Vollprotokoll enthält den zugehörigen Verlauf; separater Export enthält alle Sitzungen einschliesslich nicht abgeschlossener. Keine automatische Journal-Löschung. Browserdaten können durch Speicherbereinigung, Quota oder Browserabsturz verloren gehen; regelmässig extern sichern. Journalimport, zentrale herstellerübergreifende Speicherung und dauerhaft ausgewählter Archivordner sind noch nicht integriert. Kein Hardwareverhalten geändert.
+
+Journal-Schreibvorgänge werden gebündelt; der vollständige Archivexport enthält auch die verknüpften Journal-Daten. Bei Speicherfehlern wird soweit möglich der bereits gespeicherte und noch im Arbeitsspeicher vorhandene Verlauf exportiert.
