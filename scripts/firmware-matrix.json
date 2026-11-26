@@ -1,0 +1,62 @@
+{
+  "elmos": {
+    "esp": [
+      "esp32c3_supermini",
+      "usb_bridge_cdc"
+    ],
+    "pro": [
+      "pro_micro"
+    ]
+  },
+  "renesas": {
+    "esp": [
+      "esp32c3_renesas_i2c"
+    ],
+    "pro": [
+      "pro_micro_renesas"
+    ]
+  },
+  "novosense": {
+    "esp": [
+      "novo_i2c"
+    ],
+    "pro": [
+      "novo_i2c"
+    ]
+  },
+  "ti": {
+    "esp": [
+      "esp32c3_pga300"
+    ],
+    "pro": [
+      "promicro_pga300"
+    ]
+  },
+  "melexis": {
+    "esp": [
+      "esp32c3_supermini"
+    ],
+    "pro": [
+      "pro_micro"
+    ]
+  },
+  "adi": {
+    "esp": [
+      "esp32c3_max40109",
+      "esp32c3_max40109_readonly"
+    ],
+    "pro": [
+      "promicro_max40109"
+    ]
+  },
+  "jhm": {
+    "esp": [
+      "jhm_i2c_read_bridge",
+      "pulse_bridge"
+    ],
+    "pro": [
+      "jhm_i2c_read_bridge",
+      "pulse_bridge"
+    ]
+  }
+}

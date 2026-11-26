@@ -1,0 +1,23 @@
+name: Pinned manufacturer regression on Studio snapshots
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  native:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        manufacturer: [elmos, renesas, novosense, ti, melexis, adi, jhm]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Run selected upstream calculation and mock protocol suites against integrated code
+        run: node scripts/run-native-regression.mjs '${{ matrix.manufacturer }}'

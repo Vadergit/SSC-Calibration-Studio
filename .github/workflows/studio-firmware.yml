@@ -1,0 +1,46 @@
+name: Compile all integrated Studio firmware
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['modules/**/firmware/**', 'scripts/firmware-matrix.json', 'scripts/compile-firmware.mjs', '.github/workflows/studio-firmware.yml', 'modules-lock.json']
+  pull_request:
+    paths: ['modules/**/firmware/**', 'scripts/firmware-matrix.json', 'scripts/compile-firmware.mjs', '.github/workflows/studio-firmware.yml', 'modules-lock.json']
+permissions:
+  contents: read
+jobs:
+  firmware:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        board: [esp, pro16, pro8]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - uses: arduino/setup-arduino-cli@v2
+      - name: Install toolchains
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ '${{ matrix.board }}' = 'esp' ]; then
+            url=https://espressif.github.io/arduino-esp32/package_esp32_index.json
+            arduino-cli core update-index --additional-urls "$url"
+            arduino-cli core install esp32:esp32@3.3.7 --additional-urls "$url"
+          else
+            url=https://raw.githubusercontent.com/sparkfun/Arduino_Boards/main/IDE_Board_Manager/package_sparkfun_index.json
+            arduino-cli core update-index --additional-urls "$url"
+            arduino-cli core install arduino:avr@1.8.6
+            arduino-cli core install SparkFun:avr --additional-urls "$url"
+          fi
+      - name: Compile integrated sources (no flashing)
+        run: node scripts/compile-firmware.mjs '${{ matrix.board }}'
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: studio-firmware-${{ matrix.board }}
+          path: build/
+          if-no-files-found: warn
