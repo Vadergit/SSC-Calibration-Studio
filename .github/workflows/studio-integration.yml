@@ -1,7 +1,8 @@
 name: Build and validate integrated Studio
 on:
+  workflow_dispatch:
   push:
-    branches: ['studio/shared-ui-build']
+    branches: ['main', 'studio/shared-ui-build']
     paths-ignore: ['modules/**', 'packages/ui/styles/**', 'index.html', '**/*.html']
 permissions:
   contents: write
@@ -12,7 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          ref: studio/shared-ui-build
+          ref: ${{ github.sha }}
           fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
@@ -25,6 +26,9 @@ jobs:
       - name: Existing and shared unit tests
         run: |
           for f in tests/*.test.mjs; do node "$f" || exit 1; done
+      - name: Verify committed release snapshots on main
+        if: github.ref == 'refs/heads/main'
+        run: git diff --exit-code -- modules packages/ui/styles index.html README.html CHANGELOG.html docs
       - name: Install browser
         run: |
           npm install --no-save --package-lock=false playwright@1.52.0
@@ -34,6 +38,7 @@ jobs:
           python3 -m http.server 8000 >/tmp/studio-http.log 2>&1 &
           node tests/shared-ui-browser.mjs
       - name: Commit validated snapshots to integration branch
+        if: github.ref == 'refs/heads/studio/shared-ui-build'
         run: |
           git config user.name 'github-actions[bot]'
           git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
