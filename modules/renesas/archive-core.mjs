@@ -23,7 +23,7 @@ export function archiveVerdict(r){
 }
 export function validRecord(r){return !!r&&typeof r==='object'&&!Array.isArray(r)&&typeof r.model==='string'&&r.model.length>0&&r.model.length<100&&typeof r.created==='string'&&Number.isFinite(Date.parse(r.created))}
 export function archiveFilter(records,{query='',type='',status='',source=''}={}){
- const q=query.trim().toLowerCase();return records.filter(validRecord).filter(r=>(!type||archiveType(r)===type)&&(!status||archiveStatus(r)===status)&&(!source||archiveSource(r)===source)&&(!q||[r.model,r.created,r.name,r.plan?.name,r.dut,r.operator,r.description,archiveSource(r),archiveStatus(r),typeLabels[archiveType(r)]].join(' ').toLowerCase().includes(q))).sort((a,b)=>Date.parse(b.created)-Date.parse(a.created));
+ const q=query.trim().toLowerCase();return records.filter(validRecord).filter(r=>(!type||archiveType(r)===type)&&(!status||archiveStatus(r)===status)&&(!source||archiveSource(r)===source)&&(!q||[r.model,r.created,r.name,r.plan?.name,r.dut,r.operator,r.description,r.adapter,r.appVersion,r.chipUID,r.userID,archiveSource(r),archiveStatus(r),typeLabels[archiveType(r)]].join(' ').toLowerCase().includes(q))).sort((a,b)=>Date.parse(b.created)-Date.parse(a.created));
 }
 export const fileBase=r=>('Renesas-'+r.model+'-'+archiveType(r)+'-'+r.created).replace(/[^a-zA-Z0-9_.-]/g,'-');
 const csvCell=v=>{let s=v==null?'':typeof v==='object'?JSON.stringify(v):String(v);if(typeof v==='string'&&/^[\s]*[=+\-@\t\r]/.test(s))s="'"+s;return '"'+s.replaceAll('"','""')+'"'};
@@ -42,4 +42,14 @@ export function mergeArchive(existing,imported){
  const result=existing.slice(),known=new Set(existing.map(x=>JSON.stringify(x)));
  for(const r of imported){const key=JSON.stringify(r);if(!known.has(key)){result.push(r);known.add(key)}}
  return result;
+}
+
+export function archiveSummary(r){
+ const points=archivePoints(r),checks=archiveChecks(r),logs=Array.isArray(r.logs)?r.logs.filter(Boolean):[];
+ const groups=[...points,...checks],samples=points.map(x=>x.count??x.samples?.length),rawSamples=logs.length?logs.length:samples.length&&samples.every(x=>Number.isInteger(x)&&x>=0)&&!checks.length?samples.reduce((a,b)=>a+b,0):null;
+ const failed=checks.filter(x=>x.pass===false).length;
+ const errors=Array.isArray(r.errors)?r.errors.length:Number.isInteger(r.errors)&&r.errors>=0?r.errors:null;
+ const start=r.started??r.startedAt??r.plan?.started,end=r.ended??r.endedAt??r.created;
+ const durationMs=Number.isFinite(Date.parse(start))&&Number.isFinite(Date.parse(end))&&Date.parse(end)>=Date.parse(start)?Date.parse(end)-Date.parse(start):null;
+ return {measurementPoints:groups.length||logs.length,rawSamples,failed,errors,durationMs,start,end};
 }

@@ -20,3 +20,21 @@
 #renesasArchive .ar-details pre{max-height:400px;overflow:auto}
 #renesasArchive[hidden]{display:none!important}
 html[data-theme="dark"] #renesasArchive{background:var(--theme-surface,var(--paper));color:var(--ink)}
+
+/* Match the Elmos detail header and compact archive geometry. */
+.renesas-archive-view .ssc-studio-overview,.renesas-archive-view #home{display:none!important}
+#renesasArchive .ar-detail-title{flex-wrap:wrap;align-items:flex-start;gap:12px;margin-bottom:10px}
+#renesasArchive .ar-detail-title>div:first-child{flex:1;min-width:130px}
+#renesasArchive .ar-pdf-export{background:#e7f3f8;color:#075874;border-color:#b4d6e5;font-size:12px;padding:8px 12px;border-radius:8px;font-weight:650}
+#renesasArchive .ar-kpi-grid{margin:0 0 8px}
+#renesasArchive .ar-kpi-grid .ar-kpi{min-height:65px}
+#renesasArchive .ar-detail-title h2{font-size:17px}
+#renesasArchive .ra-glance{font-size:17px;margin:16px 0 3px}
+#renesasArchive .ra-result-graph{border:1px solid var(--line);border-radius:11px;padding:12px;margin:10px 0}
+#renesasArchive .ra-result-graph h3{font-size:14px;margin:0 0 8px}
+#renesasArchive .ra-result-graph .ra-chart{border:0;max-height:260px}
+#renesasArchive .ar-file-title .ra-select{width:auto;flex:1}
+#renesasArchive .ar-file-title input[type=checkbox]{width:13px;height:13px;margin:4px 0;padding:0}
+#renesasArchive .ar-compare-col .ar-detail-title{display:block}
+#renesasArchive .ar-compare-col .ar-kpi-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+html[data-theme="dark"] #renesasArchive .ar-pdf-export{background:#294960;color:#e0f2ff;border-color:var(--line)}

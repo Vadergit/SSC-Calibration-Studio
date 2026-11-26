@@ -102,3 +102,7 @@ Filter und Suche, Protokoll-Detailansicht, Messkurven, CSV/JSON, druckbares PDF 
 ## v0.7.26 – Original Elmos Archiv-CSS
 
 Verwendet die originalen Archivregeln des Elmos-Masters v0.7.185, nur auf die Renesas-Archiv-ID umgeschrieben. Gleiche kompakte KPI-Karten, Datei-Karten, Filter, Gerätedaten-Raster und Seitenaufteilung. Archiv ausserhalb des geführten Kalibrierassistenten; eigene Rückkehr-Schaltfläche. Renesas-Datenmodell und lokaler Browserspeicher bleiben unverändert. Ordnerzugriff und Direktvergleich fehlen weiterhin.
+
+## v0.7.27 – Elmos-Detailstruktur
+
+Kompakter Vorschaukopf mit PDF/JSON, vier Ergebnis-KPI, Geräteinformationen, DSP-Prüfung mit Toleranzband vor Rohmesspunkten (auch Einzelprüfpunkt), Dateivergleich mit zwei Checkboxen. Quellenfilter in Ergebnis-Auswahl integriert. Unbekannte Rohsamplezahl, Fehlerzahl und Dauer werden nicht erfunden. Browserarchiv unverändert; Ordnerverwaltung und Fotos weiterhin offen.
