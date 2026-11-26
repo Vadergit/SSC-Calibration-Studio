@@ -52,6 +52,11 @@ try{
  assert.match((await exported).suggestedFilename(),/zsc31014-calibration.*\.csv$/);
  assert.equal(await workspace.locator('#archiveList').isVisible(),true,'file list stays visible');
  assert.equal(await workspace.locator('#archiveList .ra-record.is-active').count(),1);
+ assert.equal(await workspace.locator('#guidedWorkspace').isVisible(),false,'archive outside guided workspace');
+ assert.equal(await workspace.locator('#renesasArchive').isVisible(),true);
+ assert.equal(await workspace.locator('#renesasArchive .ar-top h2').evaluate(e=>getComputedStyle(e).fontSize),'19px','Elmos master archive title');
+ assert.equal(await workspace.locator('#raOverview .ar-kpi strong').first().evaluate(e=>getComputedStyle(e).fontSize),'19px','Elmos master KPI size');
+ assert.equal(await workspace.locator('#raOverview .ar-kpi').first().evaluate(e=>getComputedStyle(e).padding),'8px 11px','Elmos master KPI spacing');
  const left=await workspace.locator('#archiveList').boundingBox(),right=await workspace.locator('#raDetail').boundingBox();
  assert.ok(right.x>left.x+left.width-2,'preview to right of file list');
  await workspace.locator('#raSource').selectOption('');
