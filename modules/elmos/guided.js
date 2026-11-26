@@ -196,7 +196,7 @@ const ELMOS_GUIDED=(()=>{
   for(const id of ['expertScaleGain','expertScaleOffset'])moveLabel(id,'gwExpertOutputFields');
   for(const id of ['expertOutputPreset','expertOutputStage','outputNvmRead'])moveId(id,'gwOutputActions');
   moveId('outputClippingFields','gwOutputClipping');
-  for(const id of ['outputModeHint','psscScalingPreview','expertOutputMsg','outputOneWireStatus','outputScalingAdvisory','psscOneWireOnlyStatus'])moveId(id,'gwOutputStatuses');
+  for(const id of ['outputModeHint','outputTimedOneWireOption','psscScalingPreview','expertOutputMsg','outputOneWireStatus','outputScalingAdvisory','psscOneWireOnlyStatus'])moveId(id,'gwOutputStatuses');
   moveId('psscCurrentOutputStatus','gwOutputRegisters');
   moveId('alarmEditorSection','gwAlarmHost');
   move($('alarmSummaryHeading').closest('section'),'gwAlarmDiagnostic');
@@ -417,6 +417,10 @@ const ELMOS_GUIDED=(()=>{
   }
   seriesPointFields=null;
   fieldValue('calVerifyCount',1);
+  // A newly applied matrix always starts at the midpoint in its own pressure unit.
+  // Re-entering the same matrix returns above, so manual verification edits stay intact.
+  const midpoint=p.pmin+(p.pmax-p.pmin)/2;
+  if(Number.isFinite(midpoint))fieldValue('calVerifyPressure',Number(midpoint.toPrecision(12)),'input');
   signature=nextSignature;selectedPoint=0;plan=p;latestCapture=null;lastCaptureRenderKey=null;
   return p;
  }

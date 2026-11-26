@@ -1,3 +1,76 @@
+## v0.7.185 – ESP32-Testfirmware v0.16: Wiederverbindung im kurzen One-Wire-Startfenster
+
+- Normaler PLC START bleibt zuerst erhalten. Bei fehlender Antwort folgen maximal sechs Kaltstartvarianten mit 500 ms Ausschaltzeit, GPIO4/Treiber hochohmig während der Entladung, 250/1000 µs Einschaltwartezeit bei 100000 sowie 500 µs bei 187500 Host-Timing, je 0x6C/0x7C. Keine zusätzlichen Recovery-Broadcasts oder NVM-Befehle.
+- PLC_START_TIMING_V1 protokolliert beide Magic-Cookie-Telegramme relativ zum GPIO10-Einschaltbefehl. VDD bleibt ungemessen. App wartet bei neuer Firmware bis zu 12 s. Bestehende NVM-Freigaben unverändert.
+- Firmware v0.16 wird nach erfolgreichem CI-Build separat im Installer angeboten; v0.14 bleibt verfügbar. Hardwareprüfung ausstehend.
+
+## v0.7.184 – Prüfpunkt-Vorgabe im geführten Abgleich
+
+- Bei einer neu übernommenen Messmatrix wird der erste unabhängige DSP-Prüfpunkt explizit auf den Mittelpunkt des tatsächlichen Druckbereichs gesetzt, auch wenn der Bereich bereits vorbelegt war. Manuell angepasste Prüfpunkte bleiben beim erneuten Öffnen derselben Matrix erhalten.
+- Keine Änderung der One-Wire- oder NVM-Schreiblogik.
+
+## v0.7.183 – CFG_SPI_I2C RAM 0x6C05 nach bestätigtem ESP32-Start
+
+- Debug-Fall mit Firmware v0.14: Original-NVM 0x6C06, CFG_PADS0 0x4000 (startup_com=1), RAM 0x6C05 bei stabiler PLC-Kommunikation, alle übrigen Freigaben bestätigt. Gemeinsamer Vergleich erlaubt genau diese Startmodus-Abweichung; andere Adressen und Bits bleiben geschützt.
+- Geplantes NVM wird unverändert aus dem Original erzeugt (0x6C02, 4 ms); RAM wird nicht kopiert. Firmware-ARM, Kaltstart, Backup, UID, CRC und Rückleseprüfungen bleiben erforderlich.
+- Neustartprüfung berücksichtigt denselben Startmodus bei wieder geöffnetem PLC; Debug-Anzeige und Ausgangshinweis nutzen dieselbe Freigabeprüfung. Hardwaretest ausstehend.
+
+## v0.7.182 – ESP32: gezielte 4-ms-NVM-Freigabe und erneute Diagnose
+
+- Beim bestätigten normalen ESP32-PLC-Start akzeptiert der 4-ms-Pfad zusätzlich genau die dokumentierte Original-NVM/RAM-Kombination 0x6C06/0x6C04. Keine Freigabe für andere RAM-Abweichungen, explizites PLC RECOVER oder AFE-Wiederanlauf. Kaltstartnachweis, generische Firmware-Capabilities, UID, Backup, CRC und abschliessende Rücklesung bleiben Pflicht.
+- Der kombinierte generische ESP32-NVM-Diff kann die ausdrücklich vorgemerkte und geprüfte 4-ms-Umstellung übernehmen; weitere Startregister bleiben geschützt. Die Firmware muss weiterhin NVM ARM HOST bestätigen.
+- «Verbindung & NVM-Freigabe erneut prüfen» liest die Bridge-Capabilities und Schnittstellenregister erneut, ohne Neustart oder Verlust der Messpunkte. Konkrete Sperrgründe statt Sammelmeldung; Bridge-Firmwarekennung bleibt beim .VERSION-Abruf erhalten. Hardwarevalidierung ausstehend.
+
+## v0.7.181 – Debug-Verlauf vervollständigt
+
+- Gesendete und empfangene USB-Daten in einem chronologischen Rohprotokoll; separate UI-Warnungen, Fehler und Statuswechsel. Export ohne Verbindung und auch bei fehlender Freigabe möglich.
+- Fehlende bekannte RAM-Register und fehlende NVM-Wörter werden separat aufgeführt. Keine Änderung der Sensor-Schreiblogik.
+
+## v0.7.180 – Vollständiges Debug-Paket
+
+- Einstellungen → Diagnose & Support: ein JSON-Export mit Firmware-Rohantwort, Capabilities, RAM-/NVM-Lesecache, Original-NVM, geplantem Image, Kalibrierung, UI-Zustand und einzelnen NVM-Freigaben.
+- Separater USB-, Ereignis- und Fehlerverlauf mit Zeitstempeln, Sitzungsnummer und transparenten Kapazitätsgrenzen. Kein zusätzlicher Sensorbefehl, kein Neustart und keine Änderung der Schreibfreigaben.
+- Fehlende Registerwerte bleiben ausdrücklich als fehlend markiert; Hardwaretest ausstehend.
+
+## v0.7.179 – 4-ms-Umstellung auch im bestätigten SSP3-Kalibrierpfad
+
+- Bei Original-NVM 0x6C06 darf die bekannte temporäre PSSC-RAM-Konfiguration 0x6C04 bestehen bleiben. Der NVM-Plan wird aus dem Original-NVM erstellt (0x6C02), nicht aus RAM. Nur das dokumentierte PLC-Bit und gegebenenfalls das Startfenster dürfen wechseln.
+- Der kombinierte Recovery-Diff akzeptiert die exakt geprüfte 4-ms-Umstellung bei verifizierter SSP3-Kalibrierung; alle übrigen Recovery-Beschränkungen bleiben bestehen. RAM-Schnittstelle wird unmittelbar vor dem Schreiben nochmals gelesen.
+- Bei Analogauswahl wird die erforderliche Umstellung für SSP3 vorausgewählt. Keine automatische NVM-Programmierung. Hardwareprüfung ausstehend.
+
+## v0.7.178 – SSP3-Direktzugriff ohne zusätzlichen Kaltstart
+
+- Bei bestätigtem permanentem One-Wire im RAM und Original-NVM verlangt die 4-ms-NVM-Umstellung keinen separaten SSP3-Kaltstartnachweis mehr. Der Live-Zugriff, die bestätigte PLC-Adresse, UID, NVM-Backup, CRC, Registervergleich und explizite Änderungsliste bleiben Voraussetzung.
+- Ein direkt lesbarer Sensor wird nicht allein wegen RAM-Wert 0x6C04 neu gestartet; Abweichungen zum Original-NVM bleiben durch die Recovery-Schutzpfade gesperrt bzw. eingeschränkt. DIY-Programmer behalten ihre Firmware-/Kaltstartfreigaben.
+- Nach Umstellung muss der echte Wiederzugriff im neuen 4-ms-Fenster am Testchip geprüft werden; ein Neustart im alten permanenten Modus ist dafür kein Nachweis. Noch keine Hardwarefreigabe.
+
+## v0.7.177 – Analogausgang ohne blockierten Abgleichschritt
+
+- Dauerhaft erreichbare SSP3-One-Wire-Sensoren erhalten vor dem Abgleich bevorzugt den normalen AN0204-Kaltstart, statt die Startprüfung zu überspringen oder unnötig die PSSC-RAM-Freigabe zu verwenden.
+- Bei gültigem Original-NVM kann die 4-ms-Umstellung unabhängig vom Kaltstartnachweis im Ausgangsschritt vorgemerkt werden. Es wird dabei nichts am Chip geändert; sämtliche NVM-Schreib-, UID-, CRC- und Bootschutzprüfungen bleiben bestehen.
+- Physische Prüfung am SSP3 und Sensor noch ausstehend.
+
+## v0.7.176 – Brückenspannung beim ESP32-Neuabgleich
+
+- Nach verifiziertem ESP32-C3-Kaltstart darf eine bestätigte Änderung der Brückenspannung (SVDD) aus dem RAM in den Abgleich übernommen werden. Die Vorabprüfung zeigt die Änderung an. Andere Abweichungen in CFG_AFE0 und reservierte SVDD-Stufen bleiben gesperrt.
+- Bei einer unerwarteten Abweichung zeigt die Vorabprüfung die tatsächlich gelesenen RAM- und NVM-Werte an.
+
+## v0.7.175 – 4-ms-Startfenster für One-Wire
+
+- Die Umstellung auf Analogbetrieb verwendet das 4-ms-One-Wire-Startfenster. Ist es im NVM bereits eingestellt, wird für das Interface nur das dauerhafte One-Wire-Bit gelöscht.
+- Die NVM-Neustartprüfung berücksichtigt die flüchtigen Schnittstellenbits, die der Programmer beim One-Wire-Wiederanlauf setzt.
+
+## v0.7.174 – Analogausgang bei dauerhaftem One-Wire
+
+- Bei dauerhaftem One-Wire meldet der Assistent den belegten AODO-Pin und blockiert die Freigabe eines scheinbar gültigen Analogabgleichs.
+- Nach bestätigtem One-Wire-Kaltstart mit geschalteter Sensorversorgung kann im Schritt «Ausgang» ein 200-ms-One-Wire-Startfenster für den Analogbetrieb ausdrücklich vorgemerkt werden. Die Änderung erscheint im regulären NVM-Plan mit Original-Backup, UID- und CRC-Prüfung. Unterstützt werden der originale SSP3 mit AN0204-Stromstart und eine ESP32-C3-Bridge mit generischer NVM-Firmware und Lastschalter.
+- Prüfstandstest: Nach dem Speichern den Sensor ohne Programmieradapter neu einschalten und bei 5 V die Ausgangsspannung an beiden Druck-Endpunkten messen. Anschliessend erneut über den One-Wire-Stromstart des Programmers verbinden und das NVM rücklesen.
+
+## v0.7.173 – ESP32-RAM-Start für unkalibrierte Sensoren
+
+- Der ESP32-C3 kann einen E703.11 mit leerem Druckprofil an der One-Wire-Adresse 0x6C nach bestätigter Chip-UID und gültigen EEPROM-Prüfsummen im RAM initialisieren.
+- Am angeschlossenen Print mit ESP32-Firmware v0.14 bei 25 und 100 kBd geprüft. Alle 64 EEPROM-Wörter blieben beim Test identisch.
+
 ## v0.7.172 – NVM-Anzeigeprofil und Live-Start robuster
 
 - DIY-Bridge: automatische NVM-Anzeigeprüfung vor dem zyklischen Live-Start; bestehende SSP3-Kompatibilitätsausnahme bleibt erhalten.

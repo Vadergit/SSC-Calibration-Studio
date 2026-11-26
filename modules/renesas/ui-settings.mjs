@@ -1,0 +1,1 @@
+export const installSettingsPanel=window.SSC_UI.installSettingsPanel;

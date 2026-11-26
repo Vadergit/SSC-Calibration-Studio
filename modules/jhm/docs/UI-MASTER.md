@@ -1,0 +1,3 @@
+# UI master
+
+Source: [ELMOS E703.11 master snapshot](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App/tree/13220433b1bde9b6ff8747f6fecf5262c1f85213). Original inline CSS extracted as master-base.css; guided.css, interface.css and theme.css copied without modification. Original header and eight task tiles reused with Jiuhao/offline labels. Eleven-step workflow uses Jiuhao offline engine, not Elmos hardware code. Classic toggle is an alternate compact presentation, not full Elmos classic parity. Archive uses localStorage; logging and verification use manual input. No live telemetry, chip writes, JHM-specific DSP or genuine EEPROM reconstruction. Browser and physical testing pending.

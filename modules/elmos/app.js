@@ -173,8 +173,131 @@ if(typeof document!=='undefined') (function UI(){
  const h=P.hx;
  const fmt=n=>n===null||n===undefined||!Number.isFinite(n)?'—':Math.round(n).toLocaleString('de-CH');
  const now=()=>new Date().toLocaleTimeString('de-CH',{hour12:false});
- const show=(id,text,type='')=>{const e=$(id);if(!e)return;if(id==='configPreview')e.hidden=false;e.textContent=text;e.className='callout'+(type?' '+type:'')};
- const logging=t=>{if(window.ELMOS_ARCHIVE?.active&&(st.calTask||st.writing||st.nvmWorking))window.ELMOS_ARCHIVE.trace(t);st.log.push(now()+'  '+t);if(st.log.length>500)st.log.shift();$('usbLog').textContent=st.log.slice(-90).join('\n')};
+ const show=(id,text,type='')=>{const e=$(id);if(!e)return;if(id==='configPreview')e.hidden=false;if((type==='warn'||type==='error'||type==='success')&&(e.textContent!==text||e.className!=='callout '+type)){debugAppend(type==='error'?'errors':'events',{kind:'uiMessage',id,severity:type,message:String(text),step:currentStep})}e.textContent=text;e.className='callout'+(type?' '+type:'')};
+ const logging=t=>{const message=String(t);if(message.startsWith('TX '))debugAppend('usb',{direction:'TX',message});else debugAppend('events',{kind:'application',message,step:currentStep});if(window.ELMOS_ARCHIVE?.active&&(st.calTask||st.writing||st.nvmWorking))window.ELMOS_ARCHIVE.trace(t);st.log.push(now()+'  '+t);if(st.log.length>500)st.log.shift();$('usbLog').textContent=st.log.slice(-90).join('\n')};
+
+ // Support snapshot only: never issue a serial command or change a calibration.
+ const debugLimit=100000, debugEventLimit=20000;
+ function newDebugTrace(){
+  return {startedAt:new Date().toISOString(),usb:[],events:[],errors:[],dropped:{usb:0,events:0,errors:0},ramReads:{},nvmReads:{},originalNvm:null,versionReply:null,bridgeInfo:null,gate:null,gateKey:''};
+ }
+ let debugTrace=newDebugTrace();
+ function debugAppend(kind,data){
+  const list=debugTrace[kind],limit=kind==='usb'?debugLimit:debugEventLimit;
+  // Drop a chunk, not a single array element on each live read. Report any loss.
+  if(list.length>=limit){const count=Math.ceil(limit/10);list.splice(0,count);debugTrace.dropped[kind]+=count}
+  list.push({at:new Date().toISOString(),session:st.sessionIndex,...data});
+ }
+ function debugValue(value){
+  // Keep repeated references, but not host objects, promises or cycles.
+  const ancestors=[];
+  return JSON.parse(JSON.stringify(value,function(key,v){
+   if(typeof v==='bigint')return String(v);
+   if(typeof v==='function')return undefined;
+   if(v instanceof Error)return {name:v.name,message:v.message,stack:v.stack};
+   if(v&&typeof v==='object'){
+    if(v===st.port||v===st.reader||v instanceof Promise)return undefined;
+    if(v instanceof Map)return Object.fromEntries(v);
+    if(v instanceof Set)return [...v];
+    if(ArrayBuffer.isView(v))return Array.from(v);
+    if(v instanceof Date)return v.toISOString();
+    if(!Array.isArray(v)&&Object.getPrototypeOf(v)!==Object.prototype&&Object.getPrototypeOf(v)!==null)return undefined;
+    while(ancestors.length&&ancestors[ancestors.length-1]!==this)ancestors.pop();
+    if(ancestors.includes(v))return '[circular]';
+    ancestors.push(v);
+   }
+   return v===undefined?null:v;
+  })??'null');
+ }
+ function debugRead(kind,address,value){
+  debugTrace[kind][address]={value,hex:'0x'+value.toString(16).toUpperCase().padStart(4,'0'),at:new Date().toISOString(),session:st.sessionIndex,uid:st.uid?.hex??null};
+ }
+ function debugGateSnapshot(context){
+  const w=st.nvmBackup,ram=st.regs[0x06],hasWords=Array.isArray(w)&&w.length===64,proof=st.bridgeColdStart;
+  const check=(ok,actual,expected)=>({ok:ok==null?null:!!ok,actual:actual??null,expected});
+  const bridge=st.adapterKind==='bridge',timed=!!st.expertOutputPlan?.timedOneWire;
+  const startup=hasWords?CAL.oneWireStartupStatus(w):null;
+  const checks={
+   sensorConnected:check(!!st.port&&!!st.chip&&st.mode==='usb',{port:!!st.port,chip:!!st.chip,mode:st.mode},'USB + chip'),
+   verificationComplete:check(context.verified,context.verified,true),
+   nvmBackupVerified:check(st.nvmBackupVerified&&hasWords,{verified:st.nvmBackupVerified,length:w?.length},'64 verified words'),
+   currentNvmBackup:check(hasCurrentNvmBackup(),hasCurrentNvmBackup(),true),
+   planPresent:check(!!st.calImage,!!st.calImage,true),
+   uidMatch:check(hasWords&&!!st.uid?.hex&&st.uid.ser0===w[0]&&st.uid.ser1===w[1],{uid:st.uid?.hex,ser0:st.uid?.ser0,ser1:st.uid?.ser1,backupSer0:w?.[0],backupSer1:w?.[1]},'same UID'),
+   originalCrc16:check(hasWords?CAL.crc16(w)===w[63]:null,hasWords?{computed:CAL.crc16(w),stored:w[63]}:null,'match'),
+   originalFactoryCrc8:check(hasWords?CAL.crc8(w)===(w[15]>>>8):null,hasWords?{computed:CAL.crc8(w),stored:w[15]>>>8}:null,'match'),
+   plcAddressVerified:check(st.plcAddressVerified,st.plcAddressVerified,true),
+   plcAddressMatchesNvm:check(hasWords?P.plcAddressFromConfig(w[17],w[19])===st.plcAddress:null,{live:st.plcAddress,nvm:hasWords?P.plcAddressFromConfig(w[17],w[19]):null},'match'),
+   originalStartupValid:check(startup?.ok,startup,'valid'),
+   timedSelection:check(timed?context.timedChecked&&!context.timedDisabled:null,{requested:timed,checked:context.timedChecked,disabled:context.timedDisabled},'checked and enabled when requested'),
+   timedAodoPinBlocked:check(timed&&hasWords?CAL.aodoPinBlocked(w):null,hasWords?CAL.aodoPinBlocked(w):null,true),
+   timedRamEqualsNvm:check(timed&&bridge&&hasWords?CAL.timedPlcRamMatches(w,ram):null,{ram,nvm:w?.[17],startupCom:hasWords?w[18]>>>14:null},'equal or validated temporary PLC RAM mode (0x6C04 / 0x6C05 with startup_com=1)'),
+   timedNoRamRecovery:check(timed&&bridge?!st.psscRamRecovery:null,!!st.psscRamRecovery,false),
+   timedNoColdStartAfeRestore:check(timed&&bridge?!st.coldStartAfeRestored:null,!!st.coldStartAfeRestored,false),
+   timedPowerEnabled:check(timed&&bridge?st.sensorPowerEnabled:null,!!st.sensorPowerEnabled,true),
+   bridgeBoard:check(timed&&bridge?st.bridgeBoard==='ESP32-C3 SuperMini':null,st.bridgeBoard,'ESP32-C3 SuperMini'),
+   bridgeGenericRam:check(timed&&bridge?st.bridgeGenericRam===true:null,st.bridgeGenericRam,true),
+   bridgeUserNvm:check(timed&&bridge?st.bridgeUserNvm===true:null,st.bridgeUserNvm,true),
+   bridgeOutputNvm:check(timed&&bridge?st.bridgeOutputNvm===true:null,st.bridgeOutputNvm,true),
+   bridgeCalibrationNvm:check(timed&&bridge?!!st.bridgeCalibrationNvm:null,st.bridgeCalibrationNvm,true),
+   bridgeProofPort:check(timed&&bridge?!!st.port&&proof?.port===st.port:null,!!st.port&&proof?.port===st.port,true),
+   bridgeProofSession:check(timed&&bridge?proof?.session===st.sessionIndex:null,{proof:proof?.session,current:st.sessionIndex},'match'),
+   bridgeProofUid:check(timed&&bridge?!!st.uid?.hex&&proof?.uid===st.uid.hex:null,{proof:proof?.uid,current:st.uid?.hex},'match'),
+   bridgeProofInterface:check(timed&&bridge?!!proof&&(st.iface==='i2c'?proof.iface==='i2c':st.iface==='plc'&&proof.iface!=='i2c'):null,{proof:proof?.iface,current:st.iface},'match'),
+   bridgeColdStartVerified:check(timed&&bridge?bridgeColdStartVerified():null,bridge?bridgeColdStartVerified():null,true),
+   bridgeCombinedRecoveryReady:check(timed&&bridge?bridgeCombinedRecoveryReady():null,bridge?bridgeCombinedRecoveryReady():null,true),
+   timedOneWireReady:check(timed?timedOneWireReady(w):null,timed?timedOneWireReady(w):null,true)
+  };
+  return {...context,at:new Date().toISOString(),checks,failedChecks:Object.keys(checks).filter(k=>checks[k].ok===false)};
+ }
+ function recordDebugGate(context){
+  try{
+   const key=JSON.stringify({...context,ram:st.regs[0x06],nvm:st.nvmBackup?.[17],caps:[st.bridgeGenericRam,st.bridgeUserNvm,st.bridgeOutputNvm,st.bridgeCalibrationNvm],proof:[st.bridgeColdStart?.uid,st.bridgeColdStart?.session],uid:st.uid?.hex,recovery:st.psscRamRecovery,afeRestore:st.coldStartAfeRestored,session:st.sessionIndex,step:currentStep});
+   if(key===debugTrace.gateKey)return;
+   debugTrace.gateKey=key;
+   debugTrace.gate=debugGateSnapshot(context);
+   debugAppend('events',{kind:'nvmGate',step:currentStep,reason:context.reason,disabled:context.disabled,failedChecks:debugTrace.gate.failedChecks});
+  }catch(error){debugAppend('errors',{kind:'debugGate',message:String(error.message||error)})}
+ }
+ function exportFullDebug(){
+  const status=$('fullDebugStatus');
+  try{
+   const fields={};
+   for(const e of document.querySelectorAll('input[id],select[id],textarea[id]')){
+    if(['password','file','hidden','button','submit'].includes(e.type)||/password|token|secret|archivepath|email|phone/i.test(e.id))continue;
+    fields[e.id]={value:e.type==='checkbox'||e.type==='radio'?e.checked:e.value,disabled:e.disabled};
+   }
+   const messages={};
+   for(const e of document.querySelectorAll('.callout[id], [role="status"][id], #nvmProgress, #backupProgress, #nvmDiff')){
+    if(/archivepath|archivefolder/i.test(e.id))continue;
+    messages[e.id]={text:e.textContent,hidden:e.hidden,className:e.className};
+   }
+   let gate=null;try{gate=debugGateSnapshot({...debugTrace.gate,checks:undefined,failedChecks:undefined,reason:debugTrace.gate?.reason??null,uiMessage:$('nvmWritePrereq')?.textContent,disabled:$('nvmProgram')?.disabled,verified:debugTrace.gate?.verified??null,timedChecked:$('outputTimedOneWire')?.checked,timedDisabled:$('outputTimedOneWire')?.disabled})}catch(error){debugAppend('errors',{kind:'exportGate',message:String(error.message||error)})}
+   const packageData={
+    schema:'elmos-e70311-full-debug',schemaVersion:1,appVersion:document.body.dataset.appVersion,exportedAt:new Date().toISOString(),
+    environment:{userAgent:navigator.userAgent,language:navigator.language,platform:navigator.platform,demo:demoEnabled},
+    session:{index:st.sessionIndex,startedAt:st.sessionStartedAt,port:serialPortInfo(st.port),uid:st.uid?.hex,traceStartedAt:debugTrace.startedAt},
+    programmer:{adapter:st.adapterKind,board:st.bridgeBoard,firmware:st.firmware,versionReply:debugTrace.versionReply,bridgeInfo:debugTrace.bridgeInfo},
+    workflow:{classicStep:currentStep,visiblePanels:[...document.querySelectorAll('[data-panel]:not([hidden]),[aria-current="step"]')].filter(e=>e.getClientRects().length).map(e=>({panel:e.dataset.panel??null,id:e.id,text:e.getAttribute('aria-label')||null})),activeElement:document.activeElement?.id,fields,messages},
+    nvm:{original:debugTrace.originalNvm,latestVerifiedBackup:st.nvmBackup,backupVerified:st.nvmBackupVerified,backupProof:st.nvmBackupProof,plannedImage:st.calImage,latestReadWords:debugTrace.nvmReads,missingWordAddresses:Array.from({length:64},(_,i)=>i*2).filter(a=>!(a in debugTrace.nvmReads)),programmedSnapshot:st.programmedSnapshot},
+    ram:{cachedRegisters:st.regs,readbacks:debugTrace.ramReads,registerNames:REG_NAMES,missingKnownRegisterAddresses:Object.keys(REG_NAMES).map(Number).filter(address=>!(address in debugTrace.ramReads)),boot:st.boot},
+    calibration:{points:st.calpoints,fit:st.calfit,verification:st.calValidation,afe:st.afe,adc:st.adc,dsp:st.dsp,outputPlan:st.expertOutputPlan},
+    nvmGate:gate,gateAtLastRender:debugTrace.gate,
+    state:Object.fromEntries(Object.entries(st).filter(([k])=>!['port','reader','readerPromise','cmdQueue','responseWait','liveReadPromise','timeout','log'].includes(k))),
+    logs:{usb:debugTrace.usb,events:debugTrace.events,errors:debugTrace.errors,dropped:debugTrace.dropped,limits:{usb:debugLimit,events:debugEventLimit,errors:debugEventLimit}},
+    limitations:['No hardware commands are issued by export. Register values are cached, not a fresh complete dump. Missing and stale values are possible; see timestamps and UID.','NVM readbacks may span multiple operations; only explicitly verified images represent a complete verified snapshot.','Physical VDD and actual startup timing require measurement.','Session logs are held in memory; reload clears them; limits and dropped counts are reported.']
+   };
+   const json=JSON.stringify(debugValue(packageData),null,2);
+   download('ELMOS_E70311_FULL_DEBUG_v'+packageData.appVersion+'_'+new Date().toISOString().replace(/[:.]/g,'-')+'.json',json);
+   if(status)status.textContent='Debug-Paket erstellt · '+Math.round(json.length/1024)+' KiB · keine Sensorbefehle ausgeführt.';
+  }catch(error){
+   debugAppend('errors',{kind:'export',message:String(error.message||error),stack:error.stack});
+   if(status)status.textContent='Debug-Export fehlgeschlagen: '+error.message;
+  }
+ }
+ window.addEventListener('error',e=>debugAppend('errors',{kind:'javascript',message:e.message,filename:e.filename,line:e.lineno,column:e.colno,stack:e.error?.stack}));
+ window.addEventListener('unhandledrejection',e=>debugAppend('errors',{kind:'unhandledrejection',message:String(e.reason?.message||e.reason),stack:e.reason?.stack}));
+
  const hexWords=arr=>arr.map(x=>P.hx(x,2)).join(' ');
  const sleep=ms=>new Promise(r=>setTimeout(r,ms));
  const sameBoot=(a,b)=>!!a&&!!b&&LOCKED.every(k=>a[k]===b[k]);
@@ -1086,13 +1209,13 @@ if(typeof document!=='undefined') (function UI(){
   lsSet(checkpointKey(proof.uid),serialized);
   if(lsGet(checkpointKey(proof.uid))!==serialized)throw Error('Messpunkte nicht lokal gesichert (Browser-Speicher prüfen). Aktive Messpunkte bleiben erhalten.');
  }
- async function readCalibrationUid(){
-  const v=await readReg(0x38),lo=await readReg(0x50),hi=await readReg(0x52);
+ async function readCalibrationUid(read=readReg){
+  const v=await read(0x38),lo=await read(0x50),hi=await read(0x52);
   return h(v,2)+h(hi,2)+h(lo,2);
  }
- async function readCalibrationProfile(){
+ async function readCalibrationProfile(read=readReg){
   const ram={};
-  for(const [addr] of CAL.PROFILE_REGS)ram[addr]=await readReg(addr);
+  for(const [addr] of CAL.PROFILE_REGS)ram[addr]=await read(addr);
   return ram;
  }
  function activePreflight(){
@@ -1140,7 +1263,8 @@ if(typeof document!=='undefined') (function UI(){
    if(await readCalibrationUid()!==uid)throw Error('Physische Chip-UID weicht vor Messung ab.');
    const ram=await readCalibrationProfile(),reference=calibrationReferenceSnapshot();
    if(st.port!==port||st.sessionIndex!==session||st.uid?.hex!==uid||!hasCurrentNvmBackup()||!CAL.sameNvmImage(words,st.nvmBackup))throw Error('Sensor oder Original-NVM während Vorabprüfung geändert.');
-   const plan=CAL.planCalibrationProfile(words,ram,{orderT:Number($('calTOrder').value),recovery,allowOperatingChanges,allowSingleMeasurement:st.iface==='i2c'&&st.adapterKind==='bridge',filterCatalog:filterProfiles.map(f=>f[1])});
+   const allowBridgeSupplyChange=!recovery||st.adapterKind==='bridge'&&bridgeCombinedRecoveryReady();
+   const plan=CAL.planCalibrationProfile(words,ram,{orderT:Number($('calTOrder').value),recovery,allowOperatingChanges,allowBridgeSupplyChange,allowSingleMeasurement:st.iface==='i2c'&&st.adapterKind==='bridge',filterCatalog:filterProfiles.map(f=>f[1])});
    const previous=activePreflight();
    const same=previous&&CAL.sameMeasurementProfile(previous.ram,ram)&&
     previous.allowOperatingChanges===allowOperatingChanges&&JSON.stringify(previous.plan)===JSON.stringify(plan)&&
@@ -1158,7 +1282,9 @@ if(typeof document!=='undefined') (function UI(){
      (x.index===16&&(x.from&3)===0&&x.to===((x.from&~3)|2))||
      (x.index===28&&plan.afeMandatoryRepair&&x.from===0&&x.to===ram[0x1c]));
    if(!same&&!routineFirstCalibration&&(plan.changed.length||plan.replaceTemperature||plan.temperatureRamChange)){
-    const details=plan.changed.map(x=>'NVM '+x.index+': 0x'+h(x.from,2)+' → 0x'+h(x.to,2)).join('\n')+(plan.temperatureRamChange?'\nRAM-Temperaturmodus wird vor DSP-Verifikation an das bestätigte Ziel angepasst.':'');
+    const details=plan.changed.map(x=>x.index===CAL.SVDD_INDEX?
+     'Brückenspannung SVDD: '+(BRIDGE_VOLTAGES[bridgeSupplyCode(x.from)]??'reserviert')+' → '+BRIDGE_VOLTAGES[bridgeSupplyCode(x.to)]+' V':
+     'NVM '+x.index+': 0x'+h(x.from,2)+' → 0x'+h(x.to,2)).join('\n')+(plan.temperatureRamChange?'\nRAM-Temperaturmodus wird vor DSP-Verifikation an das bestätigte Ziel angepasst.':'');
     if(!window.confirm('NVM-Vorabprüfung – folgende Änderungen erst nach bestandenem DSP-Test speichern:\n'+details+
      (plan.replaceTemperature?'\nACHTUNG: Der bisher temperaturkompensierte Druckabgleich wird durch einen Abgleich ohne TK ersetzt. Soll die TK erhalten bleiben, abbrechen und Temperaturabgleich wählen.':'')+'\nFortfahren?'))throw Error('Änderungen nicht bestätigt.');
    }
@@ -1467,6 +1593,44 @@ if(typeof document!=='undefined') (function UI(){
   }
   return failed.length?failed.join('; ')+'.':'Sicherheitsnachweis nicht vollständig.';
  }
+ // Build the permanent interface from original NVM, never from the
+ // known PSSC RAM-only broadcast (0x6C06 original -> 0x6C04 in RAM).
+ function timedOneWireReady(words){
+  if(st.iface!=='plc'||!hasCurrentNvmBackup()||words!==st.nvmBackup||
+     !CAL.oneWireStartupStatus(words).ok||!CAL.aodoPinBlocked(words)||
+     !st.plcAddressVerified||P.plcAddressFromConfig(words[17],words[19])!==st.plcAddress)
+   return false;
+  const ram=st.regs[0x06];
+  if(st.adapterKind==='bridge')
+   // A normal PLC START can leave the documented temporary RAM-only
+   // configuration. The verified original NVM remains the source of the plan.
+   return !st.psscRamRecovery&&!st.coldStartAfeRestored&&
+    CAL.timedPlcRamMatches(words,ram)&&
+    st.sensorPowerEnabled&&bridgeCombinedRecoveryReady();
+  return st.adapterKind==='ssp3'&&st.mode==='usb'&&st.chip&&!st.closing&&!st.sensorLost&&
+   (ram===words[17]||(words[17]===0x6C06&&ram===0x6C04));
+ }
+ function timedBridgeBlockReason(words){
+  const missing=[];
+  if(st.bridgeBoard!=='ESP32-C3 SuperMini')missing.push('ESP32-C3 nicht bestätigt');
+  if(!st.bridgeGenericRam)missing.push('BRIDGE_GENERIC_RAM_V1 fehlt');
+  if(!st.bridgeUserNvm)missing.push('BRIDGE_USER_NVM_V1 fehlt');
+  if(!st.bridgeOutputNvm)missing.push('AODO-NVM-Freigabe fehlt');
+  if(!bridgeColdStartVerified())missing.push('Kaltstartnachweis der aktuellen USB-Sitzung/UID fehlt');
+  if(!st.sensorPowerEnabled)missing.push('Sensor-Versorgungssteuerung inaktiv');
+  if(st.psscRamRecovery)missing.push('explizite PLC-RECOVER-Sitzung');
+  if(st.coldStartAfeRestored)missing.push('AFE-Wiederanlauf aktiv');
+  if(!hasCurrentNvmBackup()||words!==st.nvmBackup)missing.push('aktuelles NVM-Backup fehlt');
+  if(words?.length===64){
+   const ram=st.regs[0x06],saved=words[17];
+   if(!CAL.timedPlcRamMatches(words,ram))
+    missing.push('CFG_SPI_I2C RAM '+(Number.isInteger(ram)?'0x'+h(ram,2):'unbekannt')+' / NVM 0x'+h(saved,2)+' nicht kompatibel');
+   if(!CAL.oneWireStartupStatus(words).ok||!CAL.aodoPinBlocked(words))missing.push('Original-NVM-Startkonfiguration nicht geeignet');
+   if(!st.plcAddressVerified||P.plcAddressFromConfig(words[17],words[19])!==st.plcAddress)missing.push('PLC-Adresse nicht bestätigt');
+  }
+  if(!$('outputTimedOneWire')?.checked||$('outputTimedOneWire')?.disabled)missing.push('4-ms-Auswahl nicht aktiv');
+  return missing.length?missing.join('; ')+'.':'Weitere Schreibvoraussetzungen prüfen.';
+ }
  function i2cNvmSupported(){
   return st.iface==='i2c'&&st.adapterKind==='bridge'&&st.bridgeI2cNvm;
  }
@@ -1495,7 +1659,9 @@ if(typeof document!=='undefined') (function UI(){
    return false;
   const mode=(before[16]>>9)&7;
   if(mode<1||mode>3||Number(st.expertOutputPlan.mode)!==mode)return false;
-  try{CAL.validateRecoveryCalibrationDiff(before,after,{allowAnalogScaling:true,allowPressureCorrection:true,operatingProfile:confirmedOperatingProfile()})}
+  const timed=st.expertOutputPlan?.timedOneWire===true;
+  if(timed&&!timedOneWireReady(st.nvmBackup))return false;
+  try{CAL.validateRecoveryCalibrationDiff(before,after,{allowAnalogScaling:true,allowPressureCorrection:true,allowTimedOneWire:timed,operatingProfile:confirmedOperatingProfile()})}
   catch(_){return false}
   return true;
  }
@@ -1543,7 +1709,10 @@ if(typeof document!=='undefined') (function UI(){
      if(!st.expertOutputPlan||!['1','2','3'].includes(String(st.expertOutputPlan.mode))||
         !st.expertOutputPlan.scaleEnabled)
       return 'ESP32-C3: Analoge Ausgangsskalierung zuerst ausdrücklich prüfen und vormerken.';
-     try{CAL.validateRecoveryCalibrationDiff(initial,modified,{allowAnalogScaling:true})}
+     const timed=!restoring&&!alarmOnly&&!outputOnly&&st.expertOutputPlan?.timedOneWire===true;
+     if(timed&&!timedOneWireReady(st.nvmBackup))
+      return 'ESP32-C3: 4-ms-Umstellung nicht freigegeben. '+timedBridgeBlockReason(st.nvmBackup);
+     try{CAL.validateRecoveryCalibrationDiff(initial,modified,{allowAnalogScaling:true,allowTimedOneWire:timed})}
      catch(error){return 'ESP32-C3 Kombi-NVM-Schutz: '+error.message}
     }
    }
@@ -1601,7 +1770,10 @@ if(typeof document!=='undefined') (function UI(){
     return 'Kombinierter NVM-Abgleich nach Magic Cookie benötigt ein automatisches Original-NVM-Backup.';
   }
   try{
-   CAL.validateRecoveryCalibrationDiff(initial,modified,{allowAnalogScaling:allowCombinedRecovery,
+   const timed=allowCombinedRecovery&&!restoring&&!outputOnly&&!alarmOnly&&st.adapterKind==='ssp3'&&
+    st.expertOutputPlan?.timedOneWire===true;
+   if(timed&&!timedOneWireReady(st.nvmBackup))throw Error('4-ms-NVM-Umstellung: aktive SSP3-PLC-Verbindung nicht bestätigt.');
+   CAL.validateRecoveryCalibrationDiff(initial,modified,{allowAnalogScaling:allowCombinedRecovery,allowTimedOneWire:timed,
      allowPressureCorrection:!restoring&&!outputOnly&&!alarmOnly&&st.adapterKind==='ssp3'&&st.iface==='plc'&&st.calStaged&&verificationComplete(),operatingProfile:!restoring&&!outputOnly&&!alarmOnly?confirmedOperatingProfile():null});
   }catch(error){return error.message;}
   return '';
@@ -1662,7 +1834,8 @@ if(typeof document!=='undefined') (function UI(){
    const field=$(id);
    if(!field)continue;
    field.hidden=!outputPreflight.required;
-   if(outputPreflight.required)field.textContent=
+   if(outputPreflight.required)field.textContent=outputPreflight.reason===CAL.AODO_PLC_CONFLICT?
+    outputPreflight.reason:
     'Ausgangsskalierung für den aktuellen DSP-Bereich fehlt: '+outputPreflight.reason+
     '. Im Schritt «Ausgang» die Skalierung für S0/S1 neu berechnen und «Ausgangskonfiguration prüfen und vormerken» anklicken. Erst danach zum NVM wechseln. Die aktuellen Messpunkte bleiben erhalten.';
   }
@@ -1724,7 +1897,26 @@ if(typeof document!=='undefined') (function UI(){
   const cookieVerified=psscRecoveryProven()||bridgeColdStartVerified();
   const liveSsp3Calibration=!restoring&&!outputOnly&&!alarmOnly&&
    ssp3CalibrationWithoutRestart(st.calImage?.before,st.calImage?.after,st.calImage?.recoveryCombined);
-  if(outputStatus&&st.iface==='i2c'){
+  const analogPinBlocked=startup?.permanent&&['1','2','3'].includes($('expertOutputMode').value);
+  const timedOneWire=$('outputTimedOneWire');
+  if(timedOneWire){
+   // Staging is a read-only operation: require a current verified NVM,
+   // not a power-cycle proof. The write gate below still requires both.
+   const available=analogPinBlocked&&st.iface==='plc'&&hasCurrentNvmBackup()&&startup.ok;
+   const owner=available?st.sessionIndex+':'+st.uid.hex:'';
+   if(timedOneWire.dataset.owner!==owner)timedOneWire.checked=!!owner&&st.adapterKind==='ssp3';
+   timedOneWire.dataset.owner=owner;
+   timedOneWire.disabled=!available;
+   $('outputTimedOneWireOption').hidden=!analogPinBlocked;
+  }
+  if(outputStatus&&analogPinBlocked){
+   const ready=timedOneWireReady(st.nvmBackup);
+   outputStatus.textContent=timedOneWire&&!timedOneWire.disabled?
+    'AODO ist im Original-NVM für One-Wire belegt. Die 4-ms-Umstellung kann jetzt vorgemerkt werden. Die RAM-Verbindung bleibt aktiv. '+
+    (ready?'Aktive One-Wire-Verbindung und Original-NVM bestätigt. Nach dem Speichern Analogausgang und erneute Verbindung im 4-ms-Fenster am Prüfstand testen.':st.adapterKind==='ssp3'?'Schreibfreigabe fehlt: aktive One-Wire-Adresse, RAM-Schnittstellenregister und Original-NVM müssen übereinstimmen; Recovery-Schutz beachten.':'DIY-Programmer: '+timedBridgeBlockReason(st.nvmBackup)):
+    'Original-NVM und aktuelle Chip-UID bestätigen, um die 4-ms-Umstellung vorzumerken.';
+   outputStatus.className='callout warn';
+  }else if(outputStatus&&st.iface==='i2c'){
    outputStatus.textContent=i2cBlock||'I²C-Kaltstart bestätigt. Schnittstellen- und Boot-Einstellungen bleiben erhalten.';
    outputStatus.className='callout '+(i2cBlock?'warn':'success');
   }else if(outputStatus){
@@ -1734,7 +1926,8 @@ if(typeof document!=='undefined') (function UI(){
    outputStatus.textContent=!connected?
     '1-Wire-Verbindung zum Chip nicht bestätigt. Dauerhaftes NVM-Schreiben gesperrt.':
     saved?
-     safeSaved?'One-Wire-Startfenster '+saved.windowLabel+' bleibt im NVM erhalten (AODO-Modus '+saved.mode+'). '+
+     safeSaved?(saved.permanent?'One-Wire ist im NVM dauerhaft aktiv. Es belegt AODO. ':
+      'One-Wire-Startfenster '+saved.windowLabel+' bleibt im NVM erhalten (AODO-Modus '+saved.mode+'). ')+
        (saved.requiresCookie?(cookieVerified?'Magic-Cookie-Start am aktuellen Chip bestätigt.':
         'Laufender SSP3-Zugriff bestätigt.'):'Direkter Registerzugriff aktiv.')+
        ' Boot-/Interface-Register bleiben unverändert. Nach dem Schreiben Kaltstart prüfen.':
@@ -1750,6 +1943,11 @@ if(typeof document!=='undefined') (function UI(){
   const eepromReadBtn=$('eepromRead');
   if(eepromReadBtn)eepromReadBtn.disabled=!st.port||!st.chip||st.calTask||st.writing||st.nvmWorking;
   const outputNvmRead=$('outputNvmRead');if(outputNvmRead)outputNvmRead.disabled=!st.port||!st.chip||st.writing||st.calTask||st.nvmWorking;
+  if(!nvmReason&&!restoring&&!alarmOnly&&st.expertOutputPlan?.timedOneWire&&
+     (!timedOneWire?.checked||timedOneWire.disabled||!timedOneWireReady(st.nvmBackup)))
+   nvmReason=st.adapterKind==='ssp3'?
+    '4-ms-NVM-Umstellung: Auswahl, aktuelle Chip-UID, PLC-Adresse und unveränderte permanente RAM-/NVM-Schnittstelle bestätigen. Recovery-Schutz bleibt aktiv.':
+    '4-ms-NVM-Umstellung: '+timedBridgeBlockReason(st.nvmBackup);
   if(!nvmReason&&alarmPlanSelected&&!alarmOnly)nvmReason='Alarmänderungen zuerst im RAM übernehmen und erfolgreich rücklesen.';
   if(!nvmReason&&alarmOnly&&!$('nvmAutoBackup').checked)nvmReason='Alarm-NVM: Automatische Sicherung des Original-EEPROM aktivieren.';
   if(!nvmReason)nvmReason=psscNvmBlock(st.calImage?.before,st.calImage?.after,restoring,outputOnly,alarmOnly,!!st.calImage?.recoveryCombined);
@@ -1757,6 +1955,7 @@ if(typeof document!=='undefined') (function UI(){
   const experimentalRecoveryOutput=outputOnly&&
    (st.psscRamRecovery||(st.regs[0x06]===0x6C04&&st.nvmBackup?.[17]!==0x6C04));
   $('nvmProgram').disabled=!approvalGranted||!!st.nvmAttempting||st.nvmRechecking||st.nvmWorking||st.writing||st.calTask;
+  recordDebugGate({reason:nvmReason,disabled:$('nvmProgram').disabled,verified:!!verified,timedChecked:!!timedOneWire?.checked,timedDisabled:!!timedOneWire?.disabled,restoring,outputOnly,alarmOnly});
   const bootCheckBusy=st.closing||st.nvmWorking||st.writing||st.calTask;
   $('nvmRestart').hidden=!st.nvmDone||!(st.sensorPowerEnabled||demoEnabled);
   $('nvmRestart').disabled=bootCheckBusy||!st.chip||!st.port;
@@ -1838,7 +2037,7 @@ if(typeof document!=='undefined') (function UI(){
   show('calMsg','Messpunkte nach einer Änderung erneut aufnehmen.');renderCalPoints();renderFlowState()
  };
 
- const rawLine=s=>{if(window.ELMOS_ARCHIVE?.active&&(st.calTask||st.writing||st.nvmWorking))window.ELMOS_ARCHIVE.trace(s);st.log.push(now()+'  '+s);if(st.log.length>500)st.log.shift();$('usbLog').textContent=st.log.slice(-90).join('\n')};
+ const rawLine=s=>{debugAppend('usb',{direction:String(s).startsWith('TX ')?'TX':String(s).startsWith('RX ')?'RX':'other',message:String(s)});if(window.ELMOS_ARCHIVE?.active&&(st.calTask||st.writing||st.nvmWorking))window.ELMOS_ARCHIVE.trace(s);st.log.push(now()+'  '+s);if(st.log.length>500)st.log.shift();$('usbLog').textContent=st.log.slice(-90).join('\n')};
  async function readerLoop(port){try{let r=port.readable.getReader();st.readerAlive=true;st.reader=r;try{while(st.port===port&&!st.closing){const{value,done}=await r.read();if(done)break;if(!value)continue;let txt=new TextDecoder().decode(value);rawLine('RX '+txt.replace(/\r/g,'\\r').replace(/\n/g,'\\n'));if(st.responseWait){st.replyBuffer+=txt;const complete=st.adapterKind==='bridge'?/(?:^|[\r\n]):\r?\n$/.test(st.replyBuffer):P.ssp3PromptCount(st.replyBuffer)>=(st.responseWait.prompts||1);if(complete){const waiter=st.responseWait;st.responseWait=null;clearTimeout(waiter.timer);const out=st.replyBuffer;st.replyBuffer='';waiter.resolve(out)}else if(st.replyBuffer.length>16000){const waiter=st.responseWait;st.responseWait=null;clearTimeout(waiter.timer);waiter.reject(Error('SSP3-Antwort zu lang'))}}} }finally{r.releaseLock();if(st.reader===r)st.reader=null}}catch(e){
    if(st.port===port&&!st.closing)logging('USB-Lesefehler: '+e.message);
   }finally{
@@ -1948,7 +2147,8 @@ if(typeof document!=='undefined') (function UI(){
   }
   // SSP3 firmware replies as @02 08 02 04; retain the actual firmware version.
   const match=reply.match(/(?:^|[\r\n])\s*@([0-9A-F]{2})\s+([0-9A-F]{2})\s+([0-9A-F]{2})\s+([0-9A-F]{2})(?=[\s\r\n:]|$)/i);
-  st.firmware=match?match.slice(1,5).join('.'):'Antwort erhalten';
+  debugTrace.versionReply={at:new Date().toISOString(),raw:reply};
+  if(st.adapterKind!=='bridge'||!st.bridgeBoard)st.firmware=match?match.slice(1,5).join('.'):'Antwort erhalten';
   if(match&&st.adapterKind==='ssp3'&&!demoEnabled)lsSet('ssp3-confirmed-baud',$('baud').value);
   if(st.adapterKind==='ssp3'&&st.iface==='plc'&&match&&match.slice(1,5).join(' ').toUpperCase()==='02 08 02 04'){
    // Actual SSP3 RX proves that the separated ASCII form
@@ -1976,9 +2176,11 @@ if(typeof document!=='undefined') (function UI(){
  }
  async function bridgeHello(){
   const response=await exchange('BRIDGE_INFO',1600);
+  debugTrace.bridgeInfo={at:new Date().toISOString(),raw:response};
   const match=response.match(/E70311-BRIDGE\s+V1\s+CAPS=([A-Z0-9_,]+)/);
   if(!match)throw Error('Kein kompatibler E703.11 USB-CDC-Bridge-Handshake. Bitte Bridge-Firmware prüfen.');
   const caps=match[1].split(',');
+  debugTrace.bridgeInfo.capabilities=caps.slice();
   // Only the two approved DIY-programmer firmware families may access a chip.
   const isProMicro=caps.includes('PLC_D4_IO')&&caps.includes('PRO_MICRO_NVM');
   const isEsp32C3=caps.includes('PLC_GPIO4_IO')&&caps.includes('POWER_GPIO_10');
@@ -2002,6 +2204,7 @@ if(typeof document!=='undefined') (function UI(){
   st.bridgePsscRam=caps.includes('PSSC_RAM');
   st.bridgeReadOnly=caps.includes('PLC_READ_ONLY')&&caps.includes('PLC_READ');
   st.bridgeRxDiag=caps.includes('PLC_RX_DIAG');
+  st.bridgeStartupTiming=caps.includes('PLC_START_TIMING_V1');
   $('plcGpio4Mode').disabled=!st.bridgePlcIo;
   st.firmware=st.bridgeBoard+' · USB-Bridge · '+caps.join('/');
   renderStatus();logging('USB-Bridge CAPS: '+caps.join(','));
@@ -2014,7 +2217,9 @@ if(typeof document!=='undefined') (function UI(){
 
 
  async function bridgeAccess({power=false,recover=false}={}){
-  const response=await exchange(recover?'PLC RECOVER'+(power?' START':''):power?'PLC START':'PLC ACCESS',3500);
+  const command=recover?'PLC RECOVER'+(power?' START':''):power?'PLC START':'PLC ACCESS';
+  const response=await exchange(command,power&&!recover&&st.bridgeStartupTiming?12000:3500);
+  for(const row of response.split(/\r?\n/).filter(l=>l.startsWith('# PLC_START_TIMING ')))logging(row);
   if(!st.bridgePsscRam)return;
   const status=response.match(/PLC ACCESS ADDR=(6C|7C) RAM_RECOVERY=([01])/);
   if(!status)throw Error((st.bridgeBoard||'DIY-Programmer')+' hat die One-Wire-Adresse nicht bestätigt');
@@ -2063,6 +2268,42 @@ if(typeof document!=='undefined') (function UI(){
     st.bridgeRxNote=(st.bridgeBoard||'DIY-Programmer')+' empfängt sein eigenes Sendesignal, aber keine Sensorantwort auf AODO. Startfenster und Sensorversorgung prüfen.';
    else st.bridgeRxNote=(st.bridgeBoard||'DIY-Programmer')+' erkennt Signalwechsel am AODO-Empfänger, aber keine bestätigte Chipantwort. Details im USB-Protokoll.';
   }catch(e){if(attempt)attempt.diagnosticError=e.message;logging('ESP32 RX-Diagnose: '+e.message)}
+ }
+ // A zero AFE does not prove absence. ESP32 firmware accepts maintenance
+ // frames at its default 0x6C address even before PLC ACCESS succeeds.
+ async function readEsp32StartupRegister(address,timeout){
+  for(let attempt=0;;attempt++){
+   try{return await readReg(address,timeout)}
+   catch(error){
+    if(attempt===2||!error.message.includes('PLC_NO_VALID_FRAME'))
+     throw Error('Register 0x'+h(address)+': '+error.message);
+   }
+  }
+ }
+ async function startEsp32BlankSensor(attempt){
+  if(st.bridgeBoard!=='ESP32-C3 SuperMini'||!st.bridgeGenericRam||
+     !attempt.addressProbes.some(p=>p.address==='0x6C'&&p.result==='CRC_OK'&&p.word==='0x0000'))
+   return false;
+  const port=st.port,session=st.sessionIndex;
+  st.plcAddress=0x6C;
+  const afe=await readEsp32StartupRegister(R_AFE),cfg=await readEsp32StartupRegister(0x06),pads=await readEsp32StartupRegister(0x0A);
+  if(afe!==0||!(cfg&4)||P.plcAddressFromConfig(cfg,pads)!==st.plcAddress)return false;
+  const uid=await readCalibrationUid(readEsp32StartupRegister);
+  if((parseInt(uid.slice(0,4),16)&0xFFF8)!==0x0020||
+     ['00000000','FFFFFFFF'].includes(uid.slice(4)))return false;
+  if(st.port!==port||st.sessionIndex!==session||st.closing||st.plcAddress!==0x6C)
+   throw Error('USB-Verbindung während ESP32-Initialisierung geändert');
+  st.readOnlySensor=uid;
+  st.plcAddressVerified=true;
+  st.plcAddressSource='ESP32: CFG_SPI_I2C + CFG_PADS1 / CRC8';
+  st.bridgeEffectiveBaud=attempt.requestedBaud;
+  if(!await startRamMeasurementOperation({esp32Blank:true}))
+   throw Error('ESP32: RAM-Messstart fehlgeschlagen. '+st.bridgeRxNote);
+  st.bridgeRxNote='';
+  attempt.result='ram-measurement-confirmed';
+  attempt.effectiveBaud=st.bridgeEffectiveBaud;
+  attempt.address='0x6C';
+  return true;
  }
  function i2cColdStartReply(reply){
   return /^# I2C ACCESS ADDR=[0-9A-F]{2} RAM_ENABLE=0 COLD_START=1$/m.test(reply.trim());
@@ -2122,7 +2363,10 @@ if(typeof document!=='undefined') (function UI(){
    }
   };
   let found=false;
-  for(const rate of rates){if(await attemptAccess(rate,false)){found=true;break}}
+  for(const rate of rates){
+   if(await attemptAccess(rate,false)){found=true;break}
+   if(!autoProbe&&await startEsp32BlankSensor(st.bridgePlcAttempts.at(-1)))return;
+  }
   // Recovery changes volatile sensor RAM. Keep the current opt-in/manual
   // restriction and try both ordinary rates before any recovery.
   if(!found&&!autoProbe&&st.bridgePsscRam&&st.bridgePlcAttempts.some(a=>a.error?.includes('PLC_NO_VALID_FRAME'))){
@@ -2195,7 +2439,7 @@ if(typeof document!=='undefined') (function UI(){
    const bytes=P.readData(await exchange(P.spiRead(addr)),4);
    result=(bytes[2]<<8)|bytes[3]
   }
-  st.regs[addr]=result;return result
+  st.regs[addr]=result;debugRead('ramReads',addr,result);return result
  }
  function decodeSafeAFE(w){
   if(w===0){
@@ -2287,10 +2531,11 @@ if(typeof document!=='undefined') (function UI(){
  async function startRamMeasurement(){
   return withProgress('Live-Messung wird vorbereitet',()=>startRamMeasurementOperation(),true);
  }
- async function startRamMeasurementOperation(){
+ async function startRamMeasurementOperation({esp32Blank=false}={}){
   if(!st.port||!st.readOnlySensor||st.chip||st.closing||st.ramMeasurementStarting||
-     st.adapterKind!=='ssp3'||st.iface!=='plc'||!st.plcAddressVerified||
-     st.calTask||st.writing||st.nvmWorking||st.calStaged||st.calpoints.length)return false;
+     (esp32Blank?(st.adapterKind!=='bridge'||st.bridgeBoard!=='ESP32-C3 SuperMini'||!st.bridgeGenericRam):st.adapterKind!=='ssp3')||
+     st.iface!=='plc'||!st.plcAddressVerified||st.calTask||st.writing||st.nvmWorking||st.calStaged||st.calpoints.length)return false;
+  const read=esp32Blank?readEsp32StartupRegister:readReg;
   const port=st.port,address=st.plcAddress,uid=st.readOnlySensor,session=st.sessionIndex;
   const sameConnection=()=>{
    if(st.port!==port||st.closing||st.plcAddress!==address||st.sessionIndex!==session)
@@ -2298,7 +2543,7 @@ if(typeof document!=='undefined') (function UI(){
   };
   const assertUid=async()=>{
    sameConnection();
-   if(await readCalibrationUid()!==uid)throw Error('Chip-UID während RAM-Wiederanlauf geändert');
+   if(await readCalibrationUid(read)!==uid)throw Error('Chip-UID während RAM-Wiederanlauf geändert');
    sameConnection();
   };
   const send=async(register,value)=>{
@@ -2307,8 +2552,8 @@ if(typeof document!=='undefined') (function UI(){
   };
   const readWord=async i=>{
    await send(0x4E,0x4C00|i*2);
-   await nvmWaitIdle(1200,12,15);
-   return readReg(0x48);
+   await nvmWaitIdle(1200,12,15,read);
+   return read(0x48);
   };
   const changed=[];
   let restored=false,firstCalibration=false,firstIdleRequested=false;
@@ -2322,7 +2567,7 @@ if(typeof document!=='undefined') (function UI(){
     try{await assertUid();break}
     catch(e){if(attempt||!/PLC nothing received|Timeout/i.test(e.message))throw e;await sleep(100)}
    }
-   const afeBefore=await readReg(R_AFE);
+   const afeBefore=await read(R_AFE);
    if(afeBefore!==0)decodeSafeAFE(afeBefore);
    const words=[];
    for(let i=0;i<64;i++)words.push(await readWord(i));
@@ -2332,18 +2577,20 @@ if(typeof document!=='undefined') (function UI(){
    for(const i of [0,1,15,16,17,18,19,20,21,22,CAL.SVDD_INDEX,28,63])
     if(await readWord(i)!==words[i])throw Error('EEPROM-Wiederholungslesung unstabil');
    firstCalibration=CAL.uncalibratedPressureBlank(words);
+   if(esp32Blank&&!firstCalibration)
+    throw Error('Original-NVM entspricht keinem bestätigten Erstabgleichprofil.');
    const afe=firstCalibration?words[28]|0x0800:words[28];
    decodeSafeAFE(afe);
    if(firstCalibration)logging('Erstabgleich erkannt: Druckpfad unkalibriert, Elmos-Temperaturbeispielprofil. AFE-Pflichtbit und Druck-ADC nur im RAM aktivieren.');
    if(afeBefore!==0&&afeBefore!==afe)throw Error('AFE im RAM weicht vom bestätigten EEPROM ab');
-   const live=await readCalibrationProfile();
+   const live=await readCalibrationProfile(read);
    if(live[R_AFE]!==afeBefore)throw Error('AFE während Diagnose geändert');
    if(![0,2].includes(words[16]&3)||![0,2].includes(live[4]&3))
     throw Error('Reservierte DSP-Druckkorrektur');
    if((live[4]&12)!==(words[16]&12))throw Error('Temperaturkorrektur im RAM weicht vom EEPROM ab');
    if((words[16]&3)===2||(words[16]&12)!==0){
     for(let i=31;i<=54;i++)
-     if(await readReg(0x6C+(i-31)*2)!==words[i])
+     if(await read(0x6C+(i-31)*2)!==words[i])
       throw Error('Bestehende DSP-Koeffizienten stimmen nicht mit dem EEPROM überein');
    }
    const period=words[21]||1;
@@ -2363,28 +2610,28 @@ if(typeof document!=='undefined') (function UI(){
     await send(0x22,0x7BBA);
     const idleDeadline=Date.now()+1000;
     let idleStatus;
-    do{await sleep(20);idleStatus=await readReg(0x36,500)}
+    do{await sleep(20);idleStatus=await read(0x36,500)}
     while(!(idleStatus&1)&&Date.now()<idleDeadline);
     if(!(idleStatus&1))throw Error('Erstabgleich: CMD idle nicht bestätigt.');
    }
    for(const entry of profile){
-    if(await readReg(entry.address)!==entry.before)throw Error('RAM-Profil während Diagnose geändert');
+    if(await read(entry.address)!==entry.before)throw Error('RAM-Profil während Diagnose geändert');
     if(entry.before===entry.after)continue;
     await assertUid();changed.push(entry);
     await send(entry.address,entry.after);
-    if(await readReg(entry.address)!==entry.after)throw Error('RAM-Rücklesen fehlgeschlagen bei Register 0x'+h(entry.address));
+    if(await read(entry.address)!==entry.after)throw Error('RAM-Rücklesen fehlgeschlagen bei Register 0x'+h(entry.address));
    }
-   if(!CAL.sameMeasurementProfile(target,await readCalibrationProfile()))throw Error('RAM-Messprofil nach Wiederanlauf verändert');
+   if(!CAL.sameMeasurementProfile(target,await readCalibrationProfile(read)))throw Error('RAM-Messprofil nach Wiederanlauf verändert');
    await assertUid();
-   await readReg(0x2A); // clear old ADC_S event before CMD start
+   await read(0x2A); // clear old ADC_S event before CMD start
    await send(0x22,0x8B93);
    st.measurementStarts=(st.measurementStarts||0)+1;
    const deadline=Date.now()+1600;
    let status;
-   do{await sleep(30);status=await readReg(0x36,500)}
+   do{await sleep(30);status=await read(0x36,500)}
    while(!(status&2)&&Date.now()<deadline);
-   if(!(status&2))throw Error('Der Sensor meldet keine neue ADC_S-Messung (STATUS 0x'+h(status,2)+', CFG_EN 0x'+h(await readReg(0x04),2)+')');
-   await readReg(0x2A);await assertUid();
+   if(!(status&2))throw Error('Der Sensor meldet keine neue ADC_S-Messung (STATUS 0x'+h(status,2)+', CFG_EN 0x'+h(await read(0x04),2)+')');
+   await read(0x2A);await assertUid();
    st.measurementPeriod=period;st.measurementStatus=status;
    st.coldStartAfeRestored=changed.length>0;
    await detect({requireUid:true});
@@ -2407,7 +2654,8 @@ if(typeof document!=='undefined') (function UI(){
     show('nvmMsg','Original-NVM (64 Wörter, UID, CRC8/CRC16) geprüft. Vor Programmierung erfolgt eine unabhängige Rücklesung.','success');
    }catch(e){logging('NVM-Anzeige/Backup-Historie: '+e.message)}
    logging('Geprüftes Original-NVM für diese USB-Sitzung übernommen; keine erneute EEPROM-Lesung zur Vorabprüfung.');
-   show('connMsg',firstCalibration?'Erstabgleich: SSC initialisiert, Original-EEPROM geprüft. Sensor messbereit. Keine NVM-Programmierung.':
+   show('connMsg',esp32Blank?'ESP32: Sensor im RAM gestartet. Live-Messung verfügbar.':
+    firstCalibration?'Erstabgleich: SSC initialisiert, Original-EEPROM geprüft. Sensor messbereit. Keine NVM-Programmierung.':
     'Live-Messung automatisch aus dem geprüften EEPROM-Profil gestartet. Keine NVM-Programmierung.','success');
    return true;
   }catch(error){
@@ -2421,7 +2669,7 @@ if(typeof document!=='undefined') (function UI(){
    for(const entry of changed.reverse()){
     try{
      await assertUid();await send(entry.address,entry.before);
-     if(await readReg(entry.address)!==entry.before)restoreError=true;
+     if(await read(entry.address)!==entry.before)restoreError=true;
     }catch(_){restoreError=true;}
    }
    st.measurementPeriod=null;st.measurementStatus=null;
@@ -2430,6 +2678,7 @@ if(typeof document!=='undefined') (function UI(){
    const msg='Automatischer RAM-Wiederanlauf nicht bestätigt: '+error.message+
     (restoreError?' Ursprüngliche RAM-Werte nicht vollständig bestätigt. Sensor am Prüfplatz sicher neu starten.':'')+
     '. Keine NVM-Programmierung. USB-Protokoll exportieren.';
+   if(esp32Blank)st.bridgeRxNote=msg;
    logging(msg);show('connMsg',msg,'warn');
    return false;
   }finally{
@@ -2442,7 +2691,7 @@ if(typeof document!=='undefined') (function UI(){
  // Confirm the PLC address before deciding whether calibration is available.
  async function probePlcAddresses(stage,verifyPsscStartup=false,allowReadOnly=true){
   const previous=st.plcAddress;
-  for(const candidate of P.plcProbeOrder(previous)){
+   for(const candidate of P.plcProbeOrder(previous)){
    if(!st.port||st.closing)throw Error('USB-Verbindung während PLC-Adresserkennung beendet');
    st.plcAddress=candidate;
    const record={at:new Date().toISOString(),stage,address:'0x'+h(candidate),verified:false};
@@ -2455,11 +2704,11 @@ if(typeof document!=='undefined') (function UI(){
     const pads=await readReg(0x0A,1350);
     const configured=P.plcAddressFromConfig(cfg,pads);
     record.configuredAddress='0x'+h(configured);
-    if(verifyPsscStartup&&st.adapterKind==='ssp3'&&st.firmware==='02.08.02.04'&&cfg===0x6C04){
-     st.plcAddress=previous;
-     logging('PSSC-RAM-Adresse bereits aktiv. Neustart wird vor der Kalibrierung geprüft.');
-     return false;
-    }
+    // 0x6C04 can be an original permanent PLC configuration OR a RAM
+    // recovery value. Do not infer a recovery or force a power cycle from
+    // this word alone. The UID-bound NVM/preflight checks distinguish them.
+    if(verifyPsscStartup&&st.adapterKind==='ssp3'&&cfg===0x6C04)
+     logging('PLC-RAM 0x6C04 erreichbar. Original-NVM entscheidet über Direktbetrieb oder Recovery-Schutz.');
     record.cfgSpiI2c='0x'+h(cfg,2);record.cfgPads1='0x'+h(pads,2);
     if(diagnosticOnly&&configured!==candidate)decodeSafeAFE(afe);
     if(configured!==candidate)throw Error('PLC-Adresskonflikt: gelesen über 0x'+h(candidate)+
@@ -3100,7 +3349,7 @@ if(typeof document!=='undefined') (function UI(){
     $('plcPowerState').textContent='Erster Startversuch ohne Chipantwort. Zweiter, letzter Versuch läuft …';
    }else break;
   }
-  logging('SSP3-Start beendet: '+st.startupTrials.length+' Versuch(e), Chip erkannt='+!!st.chip+'.');
+   logging('SSP3-Start beendet: '+st.startupTrials.length+' Versuch(e), Chip erkannt='+!!st.chip+'.');
   return !!st.chip;
  }
  // A serial port can remain open while the DUT disappears. Never keep stale
@@ -3265,7 +3514,7 @@ if(typeof document!=='undefined') (function UI(){
   st.port=port;st.mode='usb';st.sensorLost=false;st.adapterNoReply=false;
   autoReconnectSuppressed=false;cancelAutoReconnect();
   autoPortInfo=port?.getInfo?.()||null;
-  st.sessionIndex++;st.sessionStartedAt=new Date().toISOString();st.calibrationPreflight=null;
+  st.sessionIndex++;debugTrace=newDebugTrace();st.sessionStartedAt=new Date().toISOString();debugAppend('events',{kind:'sessionStart',step:currentStep});st.calibrationPreflight=null;
   st.nvmBackup=null;st.nvmBackupVerified=false;st.nvmBackupProof=null;
   st.psscRamRecovery=false;st.coldStartAfeRestored=false;st.calibrationPreflight=null;
   st.ramRecoveryAttempted=false;st.ramRecoveryRetryable=false;
@@ -4002,10 +4251,10 @@ if(typeof document!=='undefined') (function UI(){
   if(st.iface==='plc')return; // No documented PLC relock shortcut; power cycle restores authorization
   try{await maintWrite(0x22,0x62A2)}catch(e){logging('RAM-Sperre: '+e.message)}
  }
- async function nvmWaitIdle(max=12000,initialDelay=25,pollDelay=80){
+ async function nvmWaitIdle(max=12000,initialDelay=25,pollDelay=80,read=readReg){
   const start=Date.now();await sleep(initialDelay);let stable=0;
   while(Date.now()-start<max){
-   const flags=await readReg(0x46);
+   const flags=await read(0x46);
    if((flags&7)===0){if(++stable>=2)return flags}else stable=0;
    await sleep(pollDelay)
   }
@@ -4017,6 +4266,7 @@ if(typeof document!=='undefined') (function UI(){
   try{
    await maintWrite(0x4E,0x4C00|addr);await nvmWaitIdle(12000,12,15);
    const value=await readReg(0x48);
+   debugRead('nvmReads',addr,value);
    if(diagnostic)logging('NVM-Anzeigeprofil: Wort '+(addr/2+1)+'/64 gelesen in '+(Date.now()-started)+' ms.');
    return value;
   }catch(error){if(diagnostic)logging('NVM-Anzeigeprofil: Wort '+(addr/2+1)+'/64 fehlgeschlagen nach '+(Date.now()-started)+' ms: '+error.message);throw error}
@@ -4046,6 +4296,7 @@ if(typeof document!=='undefined') (function UI(){
    const after=await bootSnapshot();if(!sameBoot(before,after))throw Error('Bootregister haben sich beim NVM-Lesen verändert');
    if(st.port!==port||st.sessionIndex!==session||st.uid?.hex!==uid||st.closing||st.sensorLost)
     throw Error('Sensor oder USB-Sitzung während NVM-Lesung geändert');
+   if(!debugTrace.originalNvm)debugTrace.originalNvm={words:words.slice(),at:new Date().toISOString(),uid,crc8Verified:true,crc16Verified:true};
    st.nvmBackup=words;st.nvmBackupVerified=true;st.nvmBackupProof={port,session,uid,words,readAt:new Date().toISOString()};st.calImage=null;
    if((postBoot||expertRead)&&await restoreCalibrationDisplayProfile(words))
     logging('Anzeigebereich aus UID-/NVM-gebundener Referenz wiederhergestellt.');
@@ -4273,6 +4524,8 @@ if(typeof document!=='undefined') (function UI(){
    // the explicit NVM diff/confirmation remains required.
    const selectedOutputMode=$('expertOutputMode').value;
    const explicitOutputPlan=st.expertOutputPlan;
+   if(explicitOutputPlan?.timedOneWire&&(!$('outputTimedOneWire')?.checked||$('outputTimedOneWire').disabled))
+    throw Error('4-ms-NVM-Umstellung im Schritt «Ausgang» erneut bestätigen.');
    let outputPlan=explicitOutputPlan;
    // Never auto-authorize an AODO write after Magic Cookie.
    // The operator must explicitly confirm the scaling in the output step.
@@ -4284,6 +4537,7 @@ if(typeof document!=='undefined') (function UI(){
      Number($('psscVdd').value),st.calfit.outputLimit);
     outputPlan={
      mode:selectedOutputMode,scaleEnabled:true,
+     timedOneWire:st.adapterKind==='ssp3'&&CAL.aodoPinBlocked(st.nvmBackup)&&$('outputTimedOneWire')?.checked===true,
      gain:scaling.gain,offset:scaling.offset,
      clipping:{mode:$('outputClippingMode').value,
       low:$('outputClipLow').valueAsNumber,high:$('outputClipHigh').valueAsNumber,
@@ -4325,7 +4579,10 @@ if(typeof document!=='undefined') (function UI(){
    image.recoveryCombined=recoveryCombined;
     image.activatePressureCorrection=activatePressureCorrection;
      image.operatingProfile=operatingProfile;
+   const timedOneWire=outputPlan?.timedOneWire===true;
    const includeAlarms=ELMOS_ALARM_EDITOR.pendingForCalibration();
+   if(timedOneWire&&includeAlarms)
+    throw Error('One-Wire-Umstellung und Alarmänderungen bitte separat programmieren.');
    if(st.alarmOnlyPlan?.duringCalibration&&!includeAlarms)
     throw Error('Alarmänderungen sind nicht erfolgreich im RAM geprüft. Im Schritt «Alarme & Fehler» prüfen oder bewusst auslassen.');
    if(includeAlarms){
@@ -4362,7 +4619,7 @@ if(typeof document!=='undefined') (function UI(){
     throw Error('Für diesen NVM-Plan fehlt der bestätigte Kaltstart. '+psscRecoveryEvidence());
    const recoveryBlock=psscNvmBlock(image.before,image.after,false,false,false,recoveryCombined);
    if(recoveryBlock)throw Error(recoveryBlock);
-   if(image.changes.some(c=>(c.index<28&&![16,22,CAL.SVDD_INDEX,...(operatingProfile?CAL.PROFILE_WORDS:[]),...(includeAlarms?[18]:[])].includes(c.index))||c.index===29))throw Error('Unzulässiges NVM-Register im Änderungsplan');
+   if(image.changes.some(c=>(c.index<28&&![16,22,CAL.SVDD_INDEX,...(operatingProfile?CAL.PROFILE_WORDS:[]),...(includeAlarms?[18]:[]),...(timedOneWire?[17,18]:[])].includes(c.index))||c.index===29))throw Error('Unzulässiges NVM-Register im Änderungsplan');
    if(!image.changes.length)throw Error('Keine NVM-Änderungen nötig');
    if(st.coldStartAfeRestored||(!demoEnabled&&!!activePreflight())){
     const port=st.port,session=st.sessionIndex,uid=st.uid.hex;
@@ -4376,7 +4633,9 @@ if(typeof document!=='undefined') (function UI(){
     const raw=`NVM 0x${h(c.address)} [${c.index}] 0x${h(c.from,2)} → 0x${h(c.to,2)}`;
     if(c.index===28&&operatingProfile?.afeMandatoryRepair)return 'AFE-Pflichtbit 11 und geprüfte Verstärkung · '+raw;
     if(c.index===16&&activatePressureCorrection)return 'DSP-Druckkorrektur: deaktiviert → aktiviert · '+raw;
-     if(c.index===30)return 'USER-ID · '+raw;
+    if(timedOneWire&&c.index===17)return 'One-Wire dauerhaft → ausschliesslich beim Sensorstart · '+raw;
+    if(timedOneWire&&c.index===18)return 'One-Wire-Startfenster → 4 ms · '+raw;
+    if(c.index===30)return 'USER-ID · '+raw;
     if(c.index===28&&((c.from^c.to)&0x1000))return 'Brückenpolarität: '+((c.from&0x1000)?'invertiert':'normal')+' → '+((c.to&0x1000)?'invertiert':'normal')+' · '+raw;
     if(c.index!==CAL.SVDD_INDEX)return raw;
     const voltages=['2,4 V','1,6 V','2,0 V','reserviert'];
@@ -4386,7 +4645,7 @@ if(typeof document!=='undefined') (function UI(){
      (verificationRequiredCount()===1?' Nur ein unabhängiger DSP-Prüfpunkt wurde verifiziert.':'')+
      (recoveryCombined?' '+(st.adapterKind==='bridge'?'ESP32-C3 Kaltstart und generische User-NVM-Capability bestätigt':psscRecoveryProven()?'SSP3-Magic-Cookie-Start bestätigt':
        'SSP3-Zugriff und Original-NVM bestätigt')+
-      ': Die ausdrücklich vorgemerkte AODO-Skalierung wird zusammen mit den Kalibrierkoeffizienten gespeichert. AODO-Modus und One-Wire-Startregister bleiben unverändert. Original-NVM-Backup ist Pflicht.':
+      ': Die ausdrücklich vorgemerkte AODO-Skalierung wird zusammen mit den Kalibrierkoeffizienten gespeichert. AODO-Modus bleibt unverändert. '+(timedOneWire?'Nur die bestätigte 4-ms-Umstellung wird im NVM gespeichert. RAM bleibt aktiv. ':'One-Wire-Startregister bleiben unverändert. ')+'Original-NVM-Backup ist Pflicht.':
       recovery?' Nur Kalibrierdaten werden gespeichert. Ausgangs- und One-Wire-Einstellungen bleiben erhalten.':'')+
      (ignoredOutputPlan?' Permanentes One Wire ist im Original-NVM bestätigt; die AODO-Einstellungen bleiben unverändert.':'')+
      (autoStageAnalog&&!recovery?' Analogskalierung wurde anhand der sichtbaren S0/S1-Werte automatisch in die Änderungsliste aufgenommen.':'')+
@@ -4466,6 +4725,14 @@ if(typeof document!=='undefined') (function UI(){
     }
    };
    confirmSameSession();
+   if(st.adapterKind==='bridge'){
+    // Refresh only the USB adapter capabilities; never PLC START/RECOVER,
+    // never manufacture a cold-start proof and never clear the fit.
+    if(!await bridgeHello())throw Error('USB-Bridge meldet keine passende Firmware.');
+    confirmSameSession();
+    await readReg(0x06);
+    await readReg(0x0A);
+   }
    await verifyRam('Vor NVM-Lesung');
    // This existing operation reissues PLC P/T and reads each EEPROM word
    // through CM_CMD read-only commands. It never calls PWR_OFF / PWR_ON.
@@ -4484,7 +4751,8 @@ if(typeof document!=='undefined') (function UI(){
    if(!st.calImage)
     throw Error('Kommunikation und RAM geprüft, aber der NVM-Plan bleibt gesperrt: '+$('nvmMsg').textContent);
    confirmSameSession();
-   show('nvmRecheckMsg','Erneute Prüfung bestanden: 64-Wort-NVM/CRC und Chip-UID bestätigt, alle DSP-RAM-Koeffizienten unverändert, NVM-Änderungsplan neu erstellt. Kein Sensorneustart und keine NVM-Programmierung. Bitte Änderungsliste und Freigabe kontrollieren.','success');
+   const timedBlocked=st.expertOutputPlan?.timedOneWire&&st.adapterKind==='bridge'&&(!timedOneWireReady(st.nvmBackup)||!$('outputTimedOneWire')?.checked||$('outputTimedOneWire')?.disabled);
+   show('nvmRecheckMsg',timedBlocked?'RAM, UID und NVM geprüft; 4-ms-Schreibfreigabe fehlt: '+timedBridgeBlockReason(st.nvmBackup)+' Kein Neustart, Messpunkte erhalten.':'Erneute Prüfung bestanden: 64-Wort-NVM/CRC und Chip-UID bestätigt, alle DSP-RAM-Koeffizienten unverändert, NVM-Änderungsplan neu erstellt. Kein Sensorneustart und keine NVM-Programmierung. Bitte Änderungsliste und Freigabe kontrollieren.',timedBlocked?'warn':'success');
   }catch(error){
    st.calImage=null; // A failed recheck must never leave an old writable plan.
    if(ramIntegrityFailed){
@@ -4541,6 +4809,10 @@ if(typeof document!=='undefined') (function UI(){
    const recoveryBlock=psscNvmBlock(initial,modified,restoring,outputOnly,alarmOnly,!!st.calImage?.recoveryCombined);
    if(recoveryBlock)throw Error(recoveryBlock);
    const alarmIntegrated=!restoring&&!alarmOnly&&!outputOnly&&st.calImage?.alarmIntegrated===true;
+   const timedOneWire=!restoring&&!alarmOnly&&st.expertOutputPlan?.timedOneWire===true;
+   if(timedOneWire&&(alarmIntegrated||!timedOneWireReady(st.nvmBackup)||
+      !$('outputTimedOneWire')?.checked||$('outputTimedOneWire').disabled))
+    throw Error('4-ms-NVM-Umstellung nicht freigegeben: Ausgangsauswahl, Original-NVM und aktive One-Wire-Verbindung prüfen. Bei DIY-Programmern gilt weiterhin der Kaltstartschutz.');
    const allowSvdd=!restoring&&!outputOnly&&!alarmOnly;
     const operatingProfile=allowSvdd&&!demoEnabled?confirmedOperatingProfile():null;
     if(allowSvdd&&!demoEnabled){assertPreflightForFit();if(JSON.stringify(st.calImage.operatingProfile)!==JSON.stringify(operatingProfile))throw Error('Messprofil-Freigabe veraltet. Änderungsliste erneut erstellen.');}
@@ -4551,7 +4823,7 @@ if(typeof document!=='undefined') (function UI(){
      throw Error('DSP-Druckkorrektur: unzulässiger NVM-Übergang');
    if(st.adapterKind==='bridge'&&!st.bridgeUserNvm&&modified[CAL.SVDD_INDEX]!==initial[CAL.SVDD_INDEX])
     throw Error('Brückenspannung dauerhaft speichern wird derzeit nur mit SSP3 unterstützt.');
-   CAL.protectStartupCommunication(initial,modified,{allowSvdd,allowAlarmMask:alarmOnly||alarmIntegrated,allowPressureCorrection,operatingProfile,interfaceMode:st.iface});
+   CAL.protectStartupCommunication(initial,modified,{allowSvdd,allowAlarmMask:alarmOnly||alarmIntegrated,allowPressureCorrection,operatingProfile,interfaceMode:st.iface,allowTimedOneWire:timedOneWire});
    const startup=CAL.oneWireStartupStatus(initial);
    const liveSsp3Calibration=!restoring&&!outputOnly&&!alarmOnly&&(st.coldStartAfeRestored||!psscRecoveryProven())&&
     ssp3CalibrationWithoutRestart(initial,modified,!!st.calImage.recoveryCombined);
@@ -4571,8 +4843,8 @@ if(typeof document!=='undefined') (function UI(){
    if(!restoring&&!outputOnly&&!alarmOnly&&st.calfit.stats.maxDigits>100)throw Error('Fitfehler zu gross (>100 Digits)');
    if(!restoring&&!outputOnly&&!alarmOnly&&modified[30]!==(requestedNvmUserId()??initial[30]))
     throw Error('USER-ID wurde geändert. Änderungsliste erneut vorbereiten.');
-   const allowedNormal=new Set([16,22,CAL.SVDD_INDEX,...(operatingProfile?CAL.PROFILE_WORDS:[]),28,30,31,32,33,34,...Array.from({length:16},(_,i)=>35+i),51,52,53,54,57,58,59,60,63,...(alarmIntegrated?[18,55,56,61,62]:[])]);
-   if(st.calImage.changes.some(c=>restoring?(c.index<28||c.index>63):alarmOnly?![16,18,55,56,61,62,63].includes(c.index):outputOnly?![16,22,57,58,59,60,63].includes(c.index):!allowedNormal.has(c.index)))throw Error('Unzulässige NVM-Änderung');
+   const allowedNormal=new Set([16,22,CAL.SVDD_INDEX,...(operatingProfile?CAL.PROFILE_WORDS:[]),28,30,31,32,33,34,...Array.from({length:16},(_,i)=>35+i),51,52,53,54,57,58,59,60,63,...(timedOneWire?[17,18]:[]),...(alarmIntegrated?[18,55,56,61,62]:[])]);
+   if(st.calImage.changes.some(c=>restoring?(c.index<28||c.index>63):alarmOnly?![16,18,55,56,61,62,63].includes(c.index):outputOnly?![16,22,57,58,59,60,63,...(timedOneWire?[17,18]:[])].includes(c.index):!allowedNormal.has(c.index)))throw Error('Unzulässige NVM-Änderung');
    if(alarmIntegrated){
     if(!(st.adapterKind==='ssp3'||st.bridgeUserNvm)||!ELMOS_ALARM_EDITOR.pendingForCalibration()||!$('nvmAutoBackup').checked)
      throw Error('Gemeinsamer Alarm-NVM-Plan nicht mehr bestätigt. Alarm-RAM erneut prüfen und Original sichern.');
@@ -4589,11 +4861,11 @@ if(typeof document!=='undefined') (function UI(){
     ELMOS_ALARM_CONFIG.validateDiff(initial,modified,CAL.crc16);
     if(initial[18]!==modified[18]&&((initial[18]^modified[18])&0xF000))
      throw Error('Alarm-Statusmaske darf Startfenster nicht verändern.');
-   }else if(outputOnly||[22,57,58,59,60].some(i=>initial[i]!==modified[i])||
+   }else if(outputOnly||[22,57,58,59,60].some(i=>initial[i]!==modified[i])||timedOneWire||
       ((initial[16]^modified[16])&((7<<9)|(1<<6)|(1<<7)))!==0){
     if(!st.expertOutputPlan)throw Error('AODO-NVM-Änderung ohne geprüften Expertenvorschlag');
     const expected=CAL.prepareOutputConfig(initial,st.expertOutputPlan,outputOnly?st.outputOnlyPlan.limit:st.calfit.outputLimit,{interfaceMode:st.iface});
-    for(const i of [16,22,57,58,59,60]){
+    for(const i of [16,22,57,58,59,60,...(timedOneWire?[17,18]:[])]){
      const ignoreMask=i===16?((alarmIntegrated?((1<<5)|(1<<8)):0)|(allowPressureCorrection?3:0)|(operatingProfile?.temperatureEnable?12:0)):0;
       const mismatch=((modified[i]^expected[i])&~ignoreMask)!==0;
      if(mismatch)throw Error('Ausgangsregister entspricht nicht dem geprüften Vorschlag');
@@ -4654,10 +4926,16 @@ if(typeof document!=='undefined') (function UI(){
      throw Error(`Chip-NVM hat sich seit dem Backup verändert (Index ${i}). Änderungsliste erneut vorbereiten.`);
     }
    }
+   if(timedOneWire){
+    const plannedRamInterface=st.regs[0x06];
+    const actualRamInterface=await readReg(0x06);
+    if(actualRamInterface!==plannedRamInterface||!timedOneWireReady(st.nvmBackup))
+     throw Error('One-Wire-Schreibfreigabe oder aktives Schnittstellenregister hat sich seit der Vorschau geändert.');
+   }
    const finalRecoveryBlock=psscNvmBlock(initial,modified,restoring,outputOnly,alarmOnly,!!st.calImage?.recoveryCombined);
    if(finalRecoveryBlock)throw Error(finalRecoveryBlock);
-   CAL.protectStartupCommunication(initial,modified,{allowSvdd,allowAlarmMask:alarmOnly||alarmIntegrated,allowPressureCorrection,operatingProfile,interfaceMode:st.iface});
-   for(let i=0;i<28;i++)if(modified[i]!==initial[i]&&(restoring||![16,...((alarmOnly||alarmIntegrated)?[18,22]:[22]),...(allowSvdd?[CAL.SVDD_INDEX]:[]),...(operatingProfile?CAL.PROFILE_WORDS:[])].includes(i)))throw Error('Boot-/Werksbereich verändert');
+   CAL.protectStartupCommunication(initial,modified,{allowSvdd,allowAlarmMask:alarmOnly||alarmIntegrated,allowPressureCorrection,operatingProfile,interfaceMode:st.iface,allowTimedOneWire:timedOneWire});
+   for(let i=0;i<28;i++)if(modified[i]!==initial[i]&&(restoring||![16,...(timedOneWire?[17,18]:[]),...((alarmOnly||alarmIntegrated)?[18,22]:[22]),...(allowSvdd?[CAL.SVDD_INDEX]:[]),...(operatingProfile?CAL.PROFILE_WORDS:[])].includes(i)))throw Error('Boot-/Werksbereich verändert');
    if(liveSsp3Calibration){
     if(st.coldStartAfeRestored)await verifyRecoveredCalibrationProfile(modified);
     for(const [address,value] of activeCalibrationRamWords()){
@@ -4693,7 +4971,8 @@ if(typeof document!=='undefined') (function UI(){
    }
    for(const x of [0x98BD,0x25BF,0x36D8])await maintWrite(0x4E,x);
    const status=await readReg(0x46);if(!(status&8))throw Error('NVM User-Bereich nicht freigegeben (CM_STATUS.ep_en=0)');
-   const changes=st.calImage.changes.slice().sort((a,b)=>a.index===63?1:b.index===63?-1:a.index-b.index);
+   const order=index=>timedOneWire&&index===17?62.5:index;
+   const changes=st.calImage.changes.slice().sort((a,b)=>order(a.index)-order(b.index));
    nvmWriteFeedback('NVM-Programmierung beginnt: '+changes.length+' geänderte Wörter …','progress',0,changes.length);
    let done=0;for(const c of changes){
     if(c.index<16||c.index>63)throw Error('Werksbereich gesperrt');
@@ -4739,13 +5018,15 @@ if(typeof document!=='undefined') (function UI(){
    }catch(archiveError){
     logging('KRITISCH: NVM erfolgreich geschrieben, Archiv-/Komplett-Export fehlgeschlagen: '+archiveError.message);
     ca('backupMsg','Sensor-NVM erfolgreich verifiziert, aber die vollständige Abgleichdatei konnte nicht gespeichert werden! Archivordner prüfen und Protokoll abschliessen.','error');
-   }st.calImage=null;st.restorePlan=null;st.outputOnlyPlan=null;st.alarmOnlyPlan=null;st.alarmCalibrationSkipped=true;if(saveOldNvm)expert.afterNvmScan();const previousProgram=storedProgrammedNvm();
+   }
+   if(timedOneWire)st.expertOutputPlan=null;
+   st.calImage=null;st.restorePlan=null;st.outputOnlyPlan=null;st.alarmOnlyPlan=null;st.alarmCalibrationSkipped=true;if(saveOldNvm)expert.afterNvmScan();const previousProgram=storedProgrammedNvm();
    const carryTemperatureBasis=!restoring&&CAL.programmedTemperatureProfileMatches(
     previousProgram,id,Object.fromEntries([[31,0x6C],[32,0x6E],[51,0x94],[52,0x96],[53,0x98],[54,0x9A]]
      .map(([word,address])=>[address,after[word]])));
    const temperatureBasis=!restoring&&!outputOnly&&!alarmOnly&&st.calfit?.orderT>0?
     'an0203-celsius-v1':carryTemperatureBasis?'an0203-celsius-v1':null;
-   const outputTarget=!restoring&&!alarmOnly&&Number.isInteger(verifiedOutputLimit)&&((after[16]>>9)&7)>=1&&((after[16]>>9)&7)<=3?
+   const outputTarget=!restoring&&!alarmOnly&&!CAL.aodoPinBlocked(after)&&Number.isInteger(verifiedOutputLimit)&&((after[16]>>9)&7)>=1&&((after[16]>>9)&7)<=3?
     {s0:Number($('psscS0').value),s1:Number($('psscS1').value),
      vdd:Number($('psscVdd').value),limit:verifiedOutputLimit}:null;
    lsSet('elmos8-last-program',JSON.stringify({
@@ -4851,10 +5132,14 @@ if(typeof document!=='undefined') (function UI(){
     if(!out.checked||!out.ok)throw Error('AODO stimmt nach Neustart nicht mit dem gespeicherten Spannungsziel überein: '+out.reason);
    }
    const boot=await bootSnapshot();
+   const startupAccess=st.iface==='plc'&&(automatic||psscRecoveryProven()||bridgeColdStartVerified());
+   const psscRecovery=recoveredAfterBoot||st.psscRamRecovery;
    for(const [index,addr] of [[16,4],[17,6],[18,8],[19,10],[20,12],[22,16]]){
-    const expectedWord=recoveredAfterBoot&&addr===6?0x6C04:st.nvmBackup[index];
     const matches=addr===6&&st.iface==='i2c'?
-     CAL.i2cBootRegisterMatches(st.nvmBackup,boot[addr]):boot[addr]===expectedWord;
+     CAL.i2cBootRegisterMatches(st.nvmBackup,boot[addr]):
+     st.iface==='plc'&&(addr===6||addr===10)?
+      CAL.oneWireBootRegisterMatches(st.nvmBackup,boot[addr],addr,{startupAccess,psscRecovery}):
+      boot[addr]===st.nvmBackup[index];
     if(!matches)throw Error('RAM-Bootregister 0x'+h(addr)+' weicht vom NVM-Backup ab');
    }
    const actualSvdd=bridgeSupplyCode(await readReg(R_BRIDGE));
@@ -5312,6 +5597,7 @@ if(typeof document!=='undefined') (function UI(){
   await applySeriesConfig(profile,groups);
  }
 
+ $('fullDebugExport')?.addEventListener('click',exportFullDebug);
  $('plcStartupLogExport').addEventListener('click',()=>{
   const log={
    tool:'ELMOS E703.11 – USB/PLC Startdiagnose',version:document.body.dataset.appVersion||'unbekannt',at:new Date().toISOString(),
@@ -5548,31 +5834,8 @@ if(typeof document!=='undefined') (function UI(){
  }
  const feedbackLink=$('feedbackLink');
  if(feedbackLink)feedbackLink.href='feedback.html?version='+encodeURIComponent(document.body.dataset.appVersion||'');
- function toggleSettings(open){
-  const panel=$('settingsPanel'),gear=$('settingsOpen');
-  panel.hidden=!open;
-  gear.setAttribute('aria-expanded',String(open));
-  if(open){
-   $('settingsSampleCount').value=$('calSampleCount').value;
-   // Archive owns the actual File System Access handle and its IndexedDB
-   // persistence. Settings only displays that same shared folder.
-   void window.ELMOS_ARCHIVE?.refreshFolderSettings?.();
-  }
- }
- $('settingsOpen').addEventListener('click',()=>toggleSettings($('settingsPanel').hidden));
- // Dismiss settings on any outside click. Preserve the underlying navigation click.
- document.addEventListener('click',event=>{
-  if($('settingsPanel').hidden)return;
-  if($('settingsPanel').contains(event.target)||$('settingsOpen').contains(event.target))return;
-  toggleSettings(false);
- },true);
- document.addEventListener('keydown',event=>{
-  if(event.key==='Escape'&&!$('settingsPanel').hidden){
-   toggleSettings(false);
-   $('settingsOpen').focus();
-   event.preventDefault();
-  }
- });
+ const studioSettings=window.SSC_UI.installSettingsPanel({panel:$('settingsPanel'),trigger:$('settingsOpen'),onOpen:()=>{$('settingsSampleCount').value=$('calSampleCount').value;void window.ELMOS_ARCHIVE?.refreshFolderSettings?.()}});
+ function toggleSettings(open){if(open)studioSettings.open();else studioSettings.close()}
  function openNvmCalculator(){
   window.ELMOS_ARCHIVE?.close?.();
   if(window.ELMOS_GUIDED?.isOpen()){

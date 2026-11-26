@@ -1,0 +1,22 @@
+{
+  "schema": 1,
+  "model": "REPLACE_WITH_EXACT_MODEL",
+  "protocol": "i2c-read-v1",
+  "source": "REPLACE_WITH_MANUAL_REVISION_AND_PAGE",
+  "address": null,
+  "registers": [
+    {
+      "id": "REPLACE",
+      "name": "Documented register",
+      "area": "unknown",
+      "prefix": "",
+      "length": null,
+      "endian": "be",
+      "signed": false,
+      "scale": 1,
+      "offset": 0,
+      "role": null,
+      "expected": null
+    }
+  ]
+}

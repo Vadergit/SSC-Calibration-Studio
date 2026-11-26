@@ -1,0 +1,33 @@
+{
+  "models": {
+    "mlx90328": {
+      "progid": "",
+      "model_expected": "",
+      "model_read": {
+        "member": "",
+        "args": []
+      },
+      "identity": {
+        "member": "",
+        "args": []
+      },
+      "sample": {
+        "raw": {
+          "member": "",
+          "args": []
+        }
+      },
+      "eeprom": {
+        "member": "",
+        "args": []
+      },
+      "eeprom_length": 0,
+      "ram": {
+        "member": "",
+        "args": []
+      },
+      "ram_length": 0,
+      "parameters": {}
+    }
+  }
+}

@@ -1,0 +1,12 @@
+// Offline tools. No chip register encodings or writes.
+export const responseMs=Object.freeze([.93,1.25,2,3.7,7.1,13.7,27,53.8,106.8,203.8]);
+export function filterPlan(pflt){if(!Number.isInteger(pflt)||pflt<0||pflt>9)throw Error('PFLT muss 0–9 sein.');return {alpha:2**(-pflt),responseMs:responseMs[pflt]}}
+export function analogPlan({vdd,low,high,clampLow,clampHigh}){if(![vdd,low,high,clampLow,clampHigh].every(Number.isFinite)||vdd<4.5||vdd>5.5||low<0||high>vdd||high<=low||clampLow<0||clampLow>12.5||clampHigh<50||clampHigh>100)throw Error('Ungültige Ausgangs- oder Clamping-Parameter.');const min=vdd*clampLow/100,max=vdd*clampHigh/100;return {min,max,lowPct:low/vdd*100,highPct:high/vdd*100,valid:low>=min-1e-12&&high<=max+1e-12}}
+export function hysteresis(points,span){if(!Number.isFinite(span)||span<=0)throw Error('Ungültige Spanne.');const groups=new Map();for(const p of points){if(!['up','down'].includes(p.direction)||![p.temperature,p.reference,p.predicted].every(Number.isFinite))continue;const key=JSON.stringify([p.temperature,p.reference]);if(!groups.has(key))groups.set(key,{temperature:p.temperature,reference:p.reference,up:[],down:[]});groups.get(key)[p.direction].push(p.predicted)}return [...groups.values()].filter(g=>g.up.length&&g.down.length).map(g=>{const mean=a=>a.reduce((s,x)=>s+x,0)/a.length;const up=mean(g.up),down=mean(g.down);return {temperature:g.temperature,reference:g.reference,up,down,errorFS:Math.abs(up-down)/span*100}})}
+// Deliberately deterministic and visibly marked; never a hardware backend.
+export class BrowserSimulation{
+ constructor(){this.pressure=10;this.temperature=25}
+ async info(model){return {model,board:'browser',firmware:'offline',mode:'simulation',identity:'BROWSER-SIM-'+model,chipDetected:false,capabilities:['sample','eeprom','ram']}}
+ async sample(model,count=1){if(!Number.isInteger(count)||count<1||count>100||!Number.isFinite(this.pressure)||this.pressure<0||this.pressure>100||!Number.isFinite(this.temperature))throw Error('Ungültige Simulationsparameter.');return {model,mode:'simulation',identity:'BROWSER-SIM-'+model,samples:count,raw:Math.round(48000-250*this.pressure+(this.temperature-25)*8),temperature:this.temperature,adcT:1200,dsp:null}}
+ async memory(model,space){if(!['eeprom','ram'].includes(space))throw Error('Nur Lesen');return {model,mode:'simulation',identity:'BROWSER-SIM-'+model,bytes:Array.from({length:space==='eeprom'?64:16},(_,i)=>i),parameters:{}}}
+}

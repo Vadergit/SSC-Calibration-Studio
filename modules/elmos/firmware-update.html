@@ -101,12 +101,19 @@
   <div class="boards">
 
   <section class="board" aria-labelledby="esp32">
-    <h2 id="esp32">ESP32-C3 SuperMini <span class="version">v0.14 (Labor)</span></h2>
+    <h2 id="esp32">ESP32-C3 SuperMini <span class="version">v0.16 (Test) / v0.14</span></h2>
     <p>One-Wire und I²C. Wähle im USB-Dialog den ESP32-C3 SuperMini.</p>
     <p class="note"><strong>Neu in v0.14 (Labor):</strong> I²C-Erkennung auch für Sensoradressen 0x79–0x7F, einschliesslich 0x7D. Beide Adresspaare 0x6C/0x6D und 0x7C/0x7D am Sensor getestet. USB-Antworten werden vollständig gesendet, bevor der nächste Befehl verarbeitet wird. Die installierbare Firmware ist kompiliert. <strong>Der tatsächliche NVM-Schreibvorgang am Sensor ist noch nicht hardwarevalidiert.</strong> Nur mit einem entbehrlichen Testchip testen. Vor dem Firmwareupdate alle noch nicht gespeicherten Kalibrierdaten und das Original-NVM sichern. <a href="docs/ESP32_C3_PLC_TEST.md">Technische Details</a>.</p>
     <div class="actions">
+    <p class="note"><strong>v0.16 (One-Wire-Testfirmware):</strong> Zusätzliche Startversuche für bereits analog abgeglichene Sensoren mit 4-ms-Startfenster. Timing-Diagnose, keine Änderung der NVM-Schreiblogik. Hardwareprüfung ausstehend. Vor dem Flashen Original-NVM und ungesicherte Abgleichdaten sichern.</p>
+    <esp-web-install-button manifest="firmware/releases/esp32-c3/v0.16/manifest.json">
+      <button type="button" slot="activate" disabled>ESP32 v0.16 installieren (Test)</button>
+      <span slot="unsupported">Chrome oder Edge auf dem Computer verwenden.</span>
+      <span slot="not-allowed">HTTPS oder localhost erforderlich.</span>
+    </esp-web-install-button>
+    <p>Vorherige Version als Rückfallmöglichkeit:</p>
     <esp-web-install-button manifest="firmware/releases/esp32-c3/v0.14/manifest.json">
-      <button type="button" slot="activate" disabled>ESP32 installieren</button>
+      <button type="button" slot="activate" disabled>ESP32 v0.14 installieren</button>
       <span slot="unsupported">Öffne diese Seite in Chrome oder Edge auf dem Computer.</span>
       <span slot="not-allowed">Öffne diese Seite über HTTPS oder localhost.</span>
     </esp-web-install-button>
@@ -194,16 +201,16 @@
   <script type="module">
     import { setupProMicroInstaller } from './pro-micro-installer.js?v=0.29';
     setupProMicroInstaller();
-    const installer = document.querySelector('esp-web-install-button');
+    const installers = [...document.querySelectorAll('esp-web-install-button')];
     const status = document.getElementById('installerStatus');
     if (!window.isSecureContext || !('serial' in navigator)) {
-      installer.hidden = true;
+      installers.forEach(installer => { installer.hidden = true; });
       status.textContent = 'Öffne diese Seite in Chrome oder Edge über HTTPS oder localhost.';
     } else {
       try {
         await import('https://unpkg.com/esp-web-tools@10.5.2/dist/web/install-button.js?module');
         await customElements.whenDefined('esp-web-install-button');
-        installer.querySelector('button').disabled = false;
+        installers.forEach(installer => { installer.querySelector('button').disabled = false; });
         status.hidden = true;
       } catch {
         status.textContent = 'Installer konnte nicht geladen werden. Prüfe die Internetverbindung und lade die Seite neu.';

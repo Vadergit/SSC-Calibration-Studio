@@ -1,0 +1,15 @@
+/* Adapter-only adjustments. All master styles are vendored without modifications. */
+#guidedWorkspace .gw-tile pre{white-space:pre-wrap;overflow-wrap:anywhere;background:var(--panel-subtle);border:1px solid var(--line);border-radius:8px;padding:10px;font:12px/1.6 ui-monospace,monospace;max-height:450px;overflow:auto}
+#guidedWorkspace .gw-tile textarea{width:100%;font:inherit;border:1px solid var(--control-border);border-radius:8px;padding:8px;background:var(--theme-input);color:var(--ink)}
+#guidedWorkspace .scroll{overflow-x:auto;margin:10px 0}#guidedWorkspace table{width:100%;border-collapse:collapse;min-width:520px}#guidedWorkspace td,#guidedWorkspace th{padding:6px;border-bottom:1px solid var(--line);text-align:left}#guidedWorkspace td input{min-width:70px;padding:6px}#guidedWorkspace td button{white-space:nowrap;padding:6px 8px}#guidedWorkspace th{font-size:11px;color:var(--muted)}
+#guidedWorkspace .metrics{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}#guidedWorkspace .metrics>div{background:var(--panel-subtle);border:1px solid var(--line);padding:12px;border-radius:9px}#guidedWorkspace .metrics strong{display:block;font-size:20px}#graph{width:100%;height:auto;color:var(--ink);border:1px solid var(--line);border-radius:9px}
+#settingsDialog{max-width:min(540px,95vw);border:1px solid var(--line);border-radius:14px;background:var(--paper);color:var(--ink);padding:22px}#settingsDialog::backdrop{background:#122d4c66}
+.adi-classic #guidedWorkspace{max-width:1270px}.adi-classic .gw-shell{grid-template-columns:240px minmax(0,1fr);border-radius:13px;box-shadow:none}.adi-classic .gw-main{padding:20px}.adi-classic .gw-choice{min-height:80px;padding:12px}.adi-classic .gw-title{font-size:20px}.adi-classic .gw-sidebar{padding:16px 10px}
+@media(max-width:790px){.adi-classic .gw-shell{grid-template-columns:1fr}}
+@media print{header,aside,.gw-footer,.gw-topline,.gw-progressbar,.gw-heading-row,button,input,select{display:none!important}#guidedWorkspace .gw-shell{display:block;box-shadow:none;border:0}#guidedWorkspace .gw-page{display:none!important}#guidedWorkspace #gwPage13{display:block!important}#guidedWorkspace pre{max-height:none!important;overflow:visible!important}}
+
+#classicPoints{display:none}.adi-classic #classicPoints{display:block}.adi-classic #guidedPoints{display:none}
+
+/* The master toggles this button with its own view controller; our controller always exposes it. */
+html.guided-active #guidedHomeTop{display:inline-flex!important;align-items:center}
+#guidedWorkspace .gw-tile+.gw-tile{margin-top:12px}
