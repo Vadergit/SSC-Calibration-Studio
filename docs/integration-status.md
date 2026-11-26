@@ -1,4 +1,4 @@
-# Studio integration status — 2026-11-26
+# Studio integration status — v0.6.1, 2026-11-26
 
 ## Implemented in Studio
 - Seven pinned manufacturer snapshots, with 38 model selections matching the native catalogs. The launcher retains new-tab navigation. It is not yet a single shared application shell.
@@ -19,3 +19,6 @@
 - The private SSC library inventory contains 17,365 tree entries, including 771 DLL files, but inventory access is not a full analysis. Windows SDK binaries and reference DLL execution need an appropriate Windows environment and original binaries; missing or undocumented protocols must not be fabricated.
 
 Physical hardware tests have not been performed. Software release gates remain open independently of hardware validation.
+
+## Firmware build findings
+The first all-target CI compile found a TI ESP32 core naming conflict (TX/RX) and missing Arduino-generated type declarations in the JHM pulse sketch. Both were corrected in Studio's reproducible packaging patch, including a 32-bit AVR microsecond timestamp. Re-run compiler matrix required before declaring the firmware build gate passed.

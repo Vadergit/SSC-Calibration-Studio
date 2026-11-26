@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.6.1 — Shared integration and regression coverage
+- Direct selection for 38 native SSC catalog entries; preserve the seven integrated manufacturer snapshots.
+- Centralize identical CSS and generic linear calibration fit; share the theme preference across all seven manufacturers.
+- Restore original-board host tools and shared runtime assets; add integrated browser, HTTP, native regression and firmware compile tests.
+- Correct TI ESP32 UART pin name collisions and Jiuhao Arduino type declarations and timer width.
+- Laboratory development release only. Native driver implementation, regression review and hardware validation remain open.
+
 ## v0.5.8 — Manufacturer title legibility
 - Increase manufacturer title size from 14 to 18 px with a semibold-to-bold weight of 700. Allow long manufacturer names to wrap without clipping.
 - Keep compact card metadata, maturity indicators and new-tab navigation unchanged.

@@ -1,6 +1,6 @@
 // Browser-independent module contract, version 1.
 export const CONTRACT_VERSION=1;
-export const STUDIO_VERSION='0.6.0';
+export const STUDIO_VERSION='0.6.1';
 export const selectionKeys=Object.freeze(['manufacturer','model','adapter','protocol','task']);
 export function emptySelection(){return Object.fromEntries(selectionKeys.map(k=>[k,'']))}
 export function changeSelection(state,key,value,allowed){
