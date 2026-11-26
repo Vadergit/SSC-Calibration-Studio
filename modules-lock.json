@@ -1,0 +1,51 @@
+{
+  "elmos": {
+    "repo": "ELMOS-E703.11-Calibration-Web-App",
+    "sha": "5e9f6d821b2899c7c153e4742257152407cf69a0",
+    "version": "0.7.185",
+    "date": "2026-11-26T12:07:32Z",
+    "status": "beta"
+  },
+  "melexis": {
+    "repo": "Melexis-SSC-Calibration-Web-App",
+    "sha": "71f8f47d6f0a6319d0eec23ae2f6f7834f45de73",
+    "version": "0.6.0-beta.1",
+    "date": "2026-11-25T13:17:39Z",
+    "status": "development"
+  },
+  "renesas": {
+    "repo": "Renesas-IDT-SSC-Calibration-Web-App",
+    "sha": "97f700213a6b1b4f0a034f09acb73ca417251969",
+    "version": "0.7.22",
+    "date": "2026-11-26T12:30:01Z",
+    "status": "beta"
+  },
+  "ti": {
+    "repo": "Texas-Instruments-SSC-Calibration-Web-App",
+    "sha": "1dfb2aab14873b60ee5f6467f26d52717c3f2dcc",
+    "version": "0.4.1",
+    "date": "2026-11-25T13:18:28Z",
+    "status": "development"
+  },
+  "novosense": {
+    "repo": "NOVOSENSE-SSC-Calibration-Web-App",
+    "sha": "663a41992a72e9c5d8d43e3f91420eff12c985fc",
+    "version": "0.5.0",
+    "date": "2026-11-25T13:19:22Z",
+    "status": "development"
+  },
+  "adi": {
+    "repo": "Analog-Devices-Maxim-SSC-Calibration-Web-App",
+    "sha": "d3300d06de5883e5c4ee569beb1a2f118fb38ca4",
+    "version": "0.7.0",
+    "date": "2026-11-25T13:19:00Z",
+    "status": "development"
+  },
+  "jhm": {
+    "repo": "Jiuhao-SSC-Calibration-Web-App",
+    "sha": "18b1cfc62c6bbd30227daf843778c745adda5016",
+    "version": "0.7.0-lab",
+    "date": "2026-11-25T13:18:16Z",
+    "status": "development"
+  }
+}
