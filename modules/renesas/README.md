@@ -86,3 +86,7 @@ Return confirmation also covers switching views. Completed native calibration is
 
 ## v0.7.12 · USB startup regression fix
 Removed obsolete toVerify binding and restored offline verificationExport control in its own panel. Missing DOM nodes previously stopped app startup before Web Serial listeners were installed. Added static check for literal DOM and event bindings plus chooser and known-port checks on all three adapters; startup browser errors are now logged immediately. No firmware or SSC protocol changes.
+
+## v0.7.23 – schnellere ZSC31014-Live-Anzeige
+
+Separate persistente Live-Intervallwahl (50/100/200/350/500/1000 ms, Standard 100 ms). Die tatsächliche Polling-Rate berücksichtigt das im bestätigten EEPROM eingestellte Update_Rate-Feld (Datenblatt Tabellen 3.2/3.3; konservative 1-MHz-Grenzen). Live-Abfragen lesen nur einmal; Status 2 wird nicht als neuer Wert angezeigt und blockiert keine AFE-Änderung mehr mit Wiederholungsschleifen. Explizite Messpunktaufnahmen behalten die strenge Frischeprüfung. EEPROM-Schreibfolge, Backup, vollständige Vorprüfung und doppelte Rücklesung bleiben unverändert. Die tatsächliche USB/SSC-Rate und AFE-Übernahmedauer sind am Prüfplatz zu messen.

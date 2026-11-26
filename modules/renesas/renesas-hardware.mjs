@@ -59,6 +59,14 @@ export const adapters=Object.freeze({renesas:{baud:19200},esp32:{baud:115200,boa
 export const zacModels=['zsc31010','zsc31015'];
 export function adapterSupported(adapter,model){return !!adapters[adapter]&&(!!i2cProfiles[model]||zacModels.includes(model));}
 export function verifyBridgeVersion(value,adapter){if(value!=='RENESAS-SSC-3.1 '+adapters[adapter]?.board)throw Error('Falsche Adapter-Firmware oder Boardauswahl. Version 3 erforderlich.');return value;}
+// Datasheet tables 3.2/3.3: conservative 1 MHz long-integration periods,
+ // including oscillator tolerance and polling margin. No EEPROM changes.
+export const liveIntervals31014=Object.freeze([50,100,200,350,500,1000]);
+export function liveInterval31014(requested,configWord){
+ const selected=liveIntervals31014.includes(Number(requested))?Number(requested):100;
+ const minimum=Number.isInteger(configWord)?[10,20,50,200][(configWord>>6)&3]:200;
+ return Math.max(selected,minimum);
+}
 export class I2cCB {
  constructor(command,model,address){this.command=command;this.model=model;this.address=address;this.p=i2cProfiles[model];this.mode='unknown';if(!this.p||!/^[0-9A-F]{2}$/.test(address))throw Error('I²C Profil/Adresse fehlt.')}
  async write(bytes,trigger=false){return this.command('iw'+(trigger?'t':'_')+this.address+String(bytes.length).padStart(3,'0')+hex(bytes).replaceAll(' ',''))}
@@ -68,6 +76,8 @@ export class I2cCB {
  async probe31014(){if(this.model!=='zsc31014')throw Error('Nur ZSC31014.');this.mode='unknown';await this.setup31014();const first=await this.read(1,true);this.mode='nom';return {firstByte:first[0],status:first[0]>>6};}
  async enter(){this.mode='unknown';if(this.model==='zsc31014'){await this.setup31014();await this.command('t00000');await this.write([0xa0,0,0],true);const b=await this.read(1);if(b[0]!==0x5a)throw Error('ZSC31014 CM: erwartet 5A, erhalten '+hex(b));}else{await this.command('t11100');await this.command('is_10');await this.write(this.model==='zsc31150'?[0x72,0xd1]:[0x72],true);if(this.model==='zsc31150'){const b=await this.read(4);if(b[0]!==0xc3||b[1]!==0x72||b[3]!==0x72||((b[0]+b[1]+b[2])&255)!==255)throw Error('ZSC31150 CM ACK fehlt.')}else await this.word(0xcf)}this.mode='cm';return this.p.ack}
  async write31014(address,value,extended=false){if(this.model!=='zsc31014'||this.mode!=='cm'||!([3,4,5,6,7,8,9,15].includes(address)||extended&&[1,10,11,12,13].includes(address))||!Number.isInteger(value)||value<0||value>65535)throw Error('EEPROM-Schreibbefehl gesperrt.');await this.write([0x40+address,value>>8,value&255]);await new Promise(r=>setTimeout(r,25));const b=await this.read(1);if(b[0]!==0x5a)throw Error('EEPROM-ACK fehlt bei '+hex([address]));}
+ // One non-blocking live read. Stale is normal, never a fresh sample.
+ async live31014(){if(this.model!=='zsc31014'||this.mode!=='nom')throw Error('Normalbetrieb erforderlich.');const v=decode31014DF(await this.read(4));if(v.status===0)return v;if(v.status===2)return null;throw Error('SSC Status '+v.status+' (1=Command Mode, 3=Diagnose).');}
  async fresh31014(){if(this.model!=='zsc31014'||this.mode!=='nom')throw Error('Normalbetrieb erforderlich.');for(let i=0;i<10;i++){const v=decode31014DF(await this.read(4));if(v.status===0)return v;if(v.status!==2)throw Error('SSC Status '+v.status+' (1=Command Mode, 3=Diagnose).');await new Promise(r=>setTimeout(r,150));}throw Error('Keine frischen Messwerte (Status 2).');}
  async writeRam(address,value){if(this.mode!=='cm')throw Error('CM erforderlich.');ramWord(this.model,address,value);await this.write([0x80+address,value>>8,value&255]);const b=await this.word(0x10+address);if(((b[0]<<8)|b[1])!==value)throw Error('RAM-Rücklesekontrolle fehlgeschlagen.');return value;}
  async setAfeGain(code){if(this.mode!=='cm')throw Error('CM erforderlich.');const a=this.model==='zsc31050'?0x19:0x0b,b=await this.word(0x10+a),p=afeGainPlan(this.model,(b[0]<<8)|b[1],code);await this.write([0x80+a,p.value>>8,p.value&255]);const after=await this.word(0x10+a);if(((after[0]<<8)|after[1])!==p.value)throw Error('AFE-Rücklesekontrolle fehlgeschlagen.');return p.value;}
