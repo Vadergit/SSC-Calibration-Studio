@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true});
 try{
  const launcher=await browser.newPage();
- await launcher.goto('http://127.0.0.1:8000/');
+ await launcher.goto('http://127.0.0.1:8000/?overview=1');
  await launcher.evaluate(()=>localStorage.setItem('ssc-studio-theme-v1','dark'));
  const select=launcher.locator('#studio-model');
  await select.waitFor({state:'visible'});

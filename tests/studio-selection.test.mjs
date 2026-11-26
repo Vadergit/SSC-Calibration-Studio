@@ -1,0 +1,12 @@
+import assert from 'node:assert/strict';
+import {catalog as nativeCatalog} from '../src/model.mjs';
+import {catalog,normalize,boardsFor,readSelection,saveSelection,modulePath,titleFor} from '../packages/ui/studio-selection.mjs';
+assert.deepEqual(catalog,nativeCatalog.map(({id,name,models})=>({id,name,models:models.map(({id,name})=>({id,name}))})));
+assert.equal(titleFor({manufacturer:'renesas',model:'zsc31014'}),'Renesas ZSC31014');
+assert.equal(normalize({manufacturer:'../',model:'../../'}).manufacturer,'elmos');
+assert.deepEqual(boardsFor('ti','pga302').map(x=>x.id),['offline']);
+const data=new Map(),storage={getItem:k=>data.get(k),setItem:(k,v)=>data.set(k,v)};
+const s=saveSelection(storage,{manufacturer:'renesas',model:'zsc31014',board:'renesas'});
+assert.deepEqual(readSelection(storage),s);
+assert.equal(modulePath(s,true),'modules/renesas/index.html?model=zsc31014&studioBoard=renesas&studioConnect=1');
+console.log('Studio connection selection persistence and routes passed');

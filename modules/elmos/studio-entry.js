@@ -2,16 +2,17 @@
 (()=>{
  'use strict';
  const q=new URLSearchParams(location.search);
- const adapter=q.get('adapter'),protocol=q.get('protocol'),task=q.get('task');
+ const adapter=q.get('studioBoard')||q.get('adapter'),protocol=q.get('studioProtocol')||q.get('protocol'),task=q.get('task');
  const labels={calibration:'Sensor neu abgleichen',verification:'Nachmessung',output:'Ausgang konfigurieren',diagnostics:'Register / NVM / Diagnose',logging:'Test / Logging',archive:'Archiv',bridge:'Sensorbrücken-Rechner',alarms:'Alarme & Fehler'};
  const taskKeys={calibration:'calibration',verification:'verification',output:'output',diagnostics:'inspect',logging:'testlog',archive:'archive',bridge:'nvm',alarms:'alarms'};
  const boards={ssp3:'Original SSP3',esp32:'ESP32-C3 SuperMini',promicro:'Arduino Pro Micro'};
  const iface={onewire:'plc',i2c:'i2c',spi:'spi'};
  const offline=['archive','verification','bridge'];
- const valid=Object.hasOwn(boards,adapter)&&Object.hasOwn(iface,protocol)&&Object.hasOwn(labels,task)&&!(adapter!=='ssp3'&&protocol==='spi');
+ const valid=Object.hasOwn(boards,adapter)&&Object.hasOwn(iface,protocol)&&(!task||Object.hasOwn(labels,task))&&!(adapter!=='ssp3'&&protocol==='spi');
  const config=valid?Object.freeze({board:adapter,adapter:adapter==='ssp3'?'ssp3':'bridge',iface:iface[protocol],task}):null;
  window.SSC_STUDIO_LAUNCH=config;
  function mount(){
+  if(!task)return;
   const api=window.ELMOS_GUIDED_API;
   const bar=document.createElement('section');bar.className='ssc-studio-bar';
   const title=document.createElement('strong');title.textContent='SSC Calibration Studio · Elmos E703.11';bar.append(title);

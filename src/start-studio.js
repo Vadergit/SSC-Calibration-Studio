@@ -1,0 +1,1 @@
+(()=>{if(new URLSearchParams(location.search).get('overview')==='1')return;import('../packages/ui/studio-selection.mjs').then(m=>{let s=m.normalize();try{s=m.readSelection(localStorage)}catch{}location.replace(new URL(m.modulePath(s),location.href).href)}).catch(()=>{})})();
