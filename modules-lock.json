@@ -15,9 +15,9 @@
   },
   "renesas": {
     "repo": "Renesas-IDT-SSC-Calibration-Web-App",
-    "sha": "5007c121880b6e1c00f0c4c6c260e622b0e3153f",
-    "version": "0.7.24",
-    "date": "2026-11-26T13:42:14Z",
+    "sha": "f8942cc29a5a15d4be111962e4f413aca504fdce",
+    "version": "0.7.25",
+    "date": "2026-11-26T13:47:27Z",
     "status": "beta"
   },
   "ti": {

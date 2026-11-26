@@ -94,3 +94,7 @@ Separate persistente Live-Intervallwahl (50/100/200/350/500/1000 ms, Standard 10
 ## v0.7.24 – Kalibrierarchiv
 
 Filter und Suche, Protokoll-Detailansicht, Messkurven, CSV/JSON, druckbares PDF sowie gesamtes Archiv sichern und JSON importieren. Bestehende Browserdaten bleiben unverändert; keine pauschale Offline-Beschriftung und kein automatisches Löschen älterer Datensätze. Bei fehlender Herkunft oder fehlenden Prüfdaten wird dies ausdrücklich angezeigt. Neue native Kalibrierprotokolle enthalten Adapter und verfügbare EEPROM-Abbilder. Kein direkter Ordnerzugriff, keine Fotoablage und kein gemeinsames herstellerübergreifendes Archiv in diesem Stand.
+
+## v0.7.25 – Archivansicht nach Elmos-Master
+
+Übersichtskennzahlen oben, Messdateien und Filter dauerhaft links, vollständige Protokollvorschau rechts. Auswahl durch Klick auf die Messdatei oder «Ergebnisse prüfen», ohne die Liste auszublenden. Kein Kalibrierschritt-Menü im geführten Archiv-Arbeitsbereich. Die Vorschau zeigt gespeicherte Daten einschliesslich vollständigem JSON; alte Datensätze werden nicht verändert. Lokaler Archivordner, Fotos und Direktvergleich zweier Dateien noch nicht integriert.
