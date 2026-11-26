@@ -35,6 +35,18 @@ try{
  assert.equal(await workspace.locator('#studioSSC').inputValue(),'zsc31014');
  assert.equal(await workspace.locator('#studioBoard').inputValue(),'renesas');
  await workspace.locator('#studioCancel').click();
+ await workspace.locator('#gwLandingConnectionInfo').waitFor({state:'visible'});
+ assert.match(await workspace.locator('#mode').textContent(),/USB nicht verbunden/);
+ assert.match(await workspace.locator('#gwChipStatus').textContent(),/ZSC31014 nicht erkannt/);
+ assert.match(await workspace.locator('#gwLandingConnectionInfo').textContent(),/Sensorbrücken-Rechner und das Archiv/);
+ await workspace.locator('[data-task="calibration"]').click();
+ assert.match(await workspace.locator('#gwMessage').textContent(),/Zuerst den ZSC31014 über USB verbinden/);
+ assert.equal(await workspace.locator('#landing').isVisible(),true);
+ await workspace.locator('#gwConnectionToggle').click();
+ assert.equal(await workspace.locator('#gwConnectionToggle').getAttribute('aria-expanded'),'true');
+ await workspace.locator('#gwConnectionToggle').click();
+ assert.equal(await workspace.locator('#landing').isVisible(),true);
+ assert.equal(await workspace.locator('#gwConnectionToggle').getAttribute('aria-expanded'),'false');
  const sample={schema:1,type:'calibration',model:'zsc31014',created:'2026-11-26T13:40:07Z',status:'completed',completed:true,a:{bridge:1638,ref:10,count:4},b:{bridge:14745,ref:90,count:4},verification:{count:2,checks:[{pass:true,error:.02,tolerance:.2},{pass:true,error:-.01,tolerance:.2}]}};
  const old={schema:1,model:'zsc31014',created:'2026-11-25T13:40:07Z',mode:'offline',points:[{raw:0,reference:0},{raw:100,reference:100}]};
  await workspace.evaluate(data=>localStorage.setItem('renesas-archive',JSON.stringify(data)),[sample,old]);

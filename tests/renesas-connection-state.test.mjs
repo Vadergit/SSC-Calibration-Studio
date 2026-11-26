@@ -1,0 +1,5 @@
+import assert from 'node:assert/strict';import {connectionState,requiresSensor,sensorConnected} from '../modules/renesas/connection-state.mjs';
+const offline=connectionState({},'ZSC31014');assert.equal(offline.header,'USB nicht verbunden');assert.equal(offline.sensor,'ZSC31014 nicht erkannt');assert.match(offline.guidance,/Sensorbrücken-Rechner und das Archiv/);assert.equal(sensorConnected({port:true}),false);
+const adapter=connectionState({port:true},'ZSC31014');assert.match(adapter.header,/USB verbunden · Sensor nicht erkannt/);assert.match(adapter.guidance,/Sensor noch nicht erkannt/);
+const online=connectionState({port:true,output:true},'ZSC31014');assert.equal(online.sensor,'ZSC31014 verbunden');assert.equal(online.connected,true);assert.equal(online.header,'SSC · Normalbetrieb');
+for(const task of ['calibration','output','alarms','testlog'])assert.equal(requiresSensor(task),true);for(const task of ['archive','nvm','inspect','verification'])assert.equal(requiresSensor(task),false);
