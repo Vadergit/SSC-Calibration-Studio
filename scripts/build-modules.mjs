@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os';
 import {join,relative,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {patchStudioFile,integrateElmos,commonStyles} from './patch-studio-module.mjs';
+import {patchFirmware} from './patch-firmware.mjs';
 import {patchNativeHost} from './patch-native-host.mjs';
 import {shareStyles} from './share-styles.mjs';
 const root=fileURLToPath(new URL('..',import.meta.url)),manifest=JSON.parse(await readFile(join(root,'modules-lock.json'),'utf8'));
@@ -23,7 +24,7 @@ try{
    await writeFile(join(out,'index.html'),v.index);await writeFile(join(out,'app.js'),v.app);
    for(const file of ['studio-entry.js','studio-entry.css'])await cp(join(root,'src','integrations','elmos',file),join(out,file));
   }
-  await walk(out,async p=>{const path=relative(out,p).split(sep).join('/');if(id==='elmos'&&['index.html','app.js'].includes(path))return;if(!/\.(?:m?js|html|py)$/.test(path))return;const old=await readFile(p,'utf8'),next=path.endsWith('.py')?patchNativeHost(id,path,old):patchStudioFile(id,path,old);if(old!==next)await writeFile(p,next)});
+  await walk(out,async p=>{const path=relative(out,p).split(sep).join('/');if(id==='elmos'&&['index.html','app.js'].includes(path))return;if(!/\.(?:m?js|html|py|ino)$/.test(path))return;const old=await readFile(p,'utf8'),next=path.endsWith('.ino')?patchFirmware(id,path,old):path.endsWith('.py')?patchNativeHost(id,path,old):patchStudioFile(id,path,old);if(old!==next)await writeFile(p,next)});
  }
  const styles=join(root,'packages','ui','styles');await mkdir(styles,{recursive:true});for(const file of commonStyles)await cp(join(tmp,'elmos',file),join(styles,file));
  await shareStyles(root,stage);

@@ -8,7 +8,7 @@
  */
 #include <Arduino.h>
 HardwareSerial owi(1);
-constexpr int TX=4,RX=5,ACT=6;
+constexpr int OWI_TX=4,OWI_RX=5,ACT=6;
 constexpr uint32_t RATE=9600;
 bool activated=false;
 String line;
@@ -51,5 +51,5 @@ void handle(String s){
  if(!strcmp(cmd,"W")&&n==5&&writeAllowed(p,a,v)){writeReg(p,a,v);if(p==0&&a==12&&v==0)activated=false;answer(id,"OK");return;}
  answer(id,"ERR","COMMAND_OR_WRITE_NOT_ALLOWED");
 }
-void setup(){pinMode(ACT,OUTPUT);digitalWrite(ACT,LOW);Serial.begin(115200);owi.begin(RATE,SERIAL_8N1,RX,TX);}
+void setup(){pinMode(ACT,OUTPUT);digitalWrite(ACT,LOW);Serial.begin(115200);owi.begin(RATE,SERIAL_8N1,OWI_RX,OWI_TX);}
 void loop(){while(Serial.available()){char c=Serial.read();if(c=='\n'){if(!discardLine)handle(line);line="";discardLine=false;}else if(c!='\r'){if(!discardLine){if(line.length()<120)line+=c;else{line="";discardLine=true;}}}}}

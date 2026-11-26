@@ -11,3 +11,10 @@ for(const [id,{esp,pro}] of Object.entries(matrix)){
  assert.deepEqual([...new Set([...esp,...pro])].sort(),all,id+' firmware coverage');
 }
 console.log('All integrated sketch directories covered by firmware matrix');
+
+const ti=readFileSync(new URL('modules/ti/firmware/esp32c3_pga300/esp32c3_pga300.ino',root),'utf8');
+assert.ok(ti.includes('OWI_TX=4,OWI_RX=5,ACT=6'));
+assert.ok(ti.includes('owi.begin(RATE,SERIAL_8N1,OWI_RX,OWI_TX)'));
+const jhm=readFileSync(new URL('modules/jhm/firmware/pulse_bridge/pulse_bridge.ino',root),'utf8');
+assert.ok(jhm.includes('uint32_t start=micros();bool found=false;'));
+assert.ok(jhm.indexOf('struct Config')<jhm.indexOf('static void send(const uint8_t *data,unsigned n,const Config& c);'));
