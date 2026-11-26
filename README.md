@@ -6,11 +6,19 @@ The goal is a single browser-based application for configuring, calibrating, pro
 
 The existing [Elmos E703.11 Calibration Web App](https://github.com/Vadergit/ELMOS-E703.11-Calibration-Web-App) is the starting point for the shared user interface and calibration workflow.
 
-## Studio v0.5.8
+## Studio v0.6.0 – integrierte Hersteller-Module
+
+Studio verwendet lokale, an Git-Commits gebundene Kopien aller sieben Hersteller-Apps. ELMOS läuft parallel: die ursprüngliche Standalone-Web-App und ihr Repository bleiben vollständig unverändert. Die Hersteller-Kacheln öffnen die lokalen Module. Der Quellstand ist in `modules-lock.json` dokumentiert, die Karten zeigen dessen Version statt Live-Main.
+
+Gemeinsame UI v0.1.0: Einstellungen (Aussenklick, Escape, Fokus, ARIA), zentrale ELMOS-CSS-Dateien. Die übrige Bedienlogik und Hardwaretreiber bleiben in dieser Migrationsstufe in den jeweiligen Modulen. Keine neue Hardwarefreigabe. Renesas ZSC31014 ist Beta; ZSC31015 und weitere Modelle bleiben in Entwicklung.
+
+Reproduzierbarer Build: `node scripts/build-modules.mjs`, anschliessend `node scripts/build-launcher.mjs`, `node scripts/build-docs.mjs` und Tests. Keine Laufzeit-Abhängigkeit von wechselnden Main-Branches. Nur eine Instanz pro physischem Adapter verbinden; Browser-Speicher kann wegen gleicher Origin zwischen Standalone und Studio geteilt sein.
+
+## Bisheriger Studio-Stand v0.5.8
 
 [Open Studio](https://vadergit.github.io/SSC-Calibration-Studio/) · [Architecture and module integration](docs/studio-architecture.md) · [Changelog](CHANGELOG.md)
 
-Every manufacturer card opens its independent public calibration web app directly in a new browser tab. Each card shows the app's declared version and latest Main commit timestamp, with relative age. A public GitHub API refresh runs on page load and every 15 minutes, with local caching and a committed fallback snapshot. These values describe source code, not confirmed Pages deployment or version release dates. Device, adapter and task selection take place within that app. Elmos opens the functional beta hardware calibrator, which has not yet been fully validated; the pinned local v0.7.172 reference remains available under Related projects. The six other manufacturer apps are under active development and are not ready for practical use. See [architecture](docs/studio-architecture.md).
+Previously, every manufacturer card opened its independent public calibration web app directly in a new browser tab. Each card shows the app's declared version and latest Main commit timestamp, with relative age. A public GitHub API refresh runs on page load and every 15 minutes, with local caching and a committed fallback snapshot. These values describe source code, not confirmed Pages deployment or version release dates. Device, adapter and task selection take place within that app. Elmos opens the functional beta hardware calibrator, which has not yet been fully validated; the pinned local v0.7.172 reference remains available under Related projects. The six other manufacturer apps are under active development and are not ready for practical use. See [architecture](docs/studio-architecture.md).
 
 ## Related projects
 

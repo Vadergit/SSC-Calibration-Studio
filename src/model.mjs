@@ -221,12 +221,10 @@ export function calibratorUrl(manufacturer,model){
  if (module?.entryUrl) return module.entryUrl;
  const repository = simulationRepositories[manufacturer];
  if (!entry || !repository) return null;
- const url = new URL(repository + '/', 'https://vadergit.github.io/');
- url.searchParams.set('model', entry.id);
- return url.href;
+ return './modules/'+manufacturer+'/index.html?'+new URLSearchParams({model:entry.id}).toString();
 }
 export function manufacturerUrl(manufacturer){
- if(manufacturer==='elmos')return 'https://vadergit.github.io/ELMOS-E703.11-Calibration-Web-App/';
+ if(manufacturer==='elmos')return './modules/elmos/index.html';
  const repository=Object.hasOwn(simulationRepositories,manufacturer)?simulationRepositories[manufacturer]:null;
- return repository?'https://vadergit.github.io/'+repository+'/':null;
+ return repository?'./modules/'+manufacturer+'/index.html':null;
 }

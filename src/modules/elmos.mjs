@@ -1,8 +1,8 @@
 import {launchUrl} from '../../packages/core/index.mjs';
 // Versioned local-page integration; upstream calibration engine remains intact.
 export const elmos = Object.freeze({
- id:'elmos', version:'0.2.0', contractVersion:1, sourceVersion:'0.7.172',
- sourceRevision:'fbd88d422821151b22a440421133a66fb9983c03',
+ id:'elmos', version:'0.2.0', contractVersion:1, sourceVersion:'0.7.185',
+ sourceRevision:'5e9f6d821b2899c7c153e4742257152407cf69a0',
  mode:'local-page', entryUrl:'./modules/elmos/index.html',
  adapters:[
   {

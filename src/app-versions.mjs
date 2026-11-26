@@ -1,17 +1,17 @@
 export const appVersions = {
   "elmos": {
     "repo": "ELMOS-E703.11-Calibration-Web-App",
-    "version": "0.7.173",
-    "date": "2026-11-24T17:01:01Z",
-    "sha": "13220433b1bde9b6ff8747f6fecf5262c1f85213",
+    "version": "0.7.185",
+    "date": "2026-11-26T12:07:32Z",
+    "sha": "5e9f6d821b2899c7c153e4742257152407cf69a0",
     "path": "index.html",
     "kind": "elmos"
   },
   "renesas": {
     "repo": "Renesas-IDT-SSC-Calibration-Web-App",
-    "version": "0.6.1",
-    "date": "2026-11-25T13:17:30Z",
-    "sha": "51f7157a71c5d87b220069f4a78290b67ffde7b9",
+    "version": "0.7.22",
+    "date": "2026-11-26T12:30:01Z",
+    "sha": "97f700213a6b1b4f0a034f09acb73ca417251969",
     "path": "app.mjs",
     "kind": "renesas"
   },

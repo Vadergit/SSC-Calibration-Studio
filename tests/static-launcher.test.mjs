@@ -33,9 +33,9 @@ assert.ok(html.includes('href="./ssc-favicon.svg"'));
 assert.ok(html.includes('href="./ssc-favicon.png"'));
 const fullCards=[...html.matchAll(/<a class="choice launcher-choice[^>]*>[\s\S]*?<\/a>/g)].map(m=>m[0]);
 assert.equal(fullCards.length,7);
-for(const maker of catalog){const card=fullCards.find(c=>c.includes('href="'+manufacturerUrl(maker.id)+'"'));assert.ok(card);assert.ok(card.includes(maker.id==='elmos'?'Beta · funktionsfähig':'In Entwicklung'));assert.ok(card.includes(maker.id==='elmos'?'Noch nicht vollständig geprüft':'Noch nicht einsatzbereit'));assert.ok(card.includes('target="_blank"'));}
-for(const card of fullCards){assert.ok(card.includes('class="app-version"'));assert.ok(card.includes('class="app-changed"'));assert.ok(card.includes('data-repo='));assert.ok(card.includes('Letzte Änderung (Main)'));}
-assert.ok(html.includes('src/app-version-live.js'));
+for(const maker of catalog){const card=fullCards.find(c=>c.includes('href="'+manufacturerUrl(maker.id)+'"'));assert.ok(card);assert.ok(card.includes(maker.id==='elmos'?'Beta · funktionsfähig':maker.id==='renesas'?'Beta · ZSC31014':'In Entwicklung'));assert.ok(card.includes(maker.id==='elmos'?'Noch nicht vollständig geprüft':maker.id==='renesas'?'ZSC31014 testbar':'Noch nicht einsatzbereit'));assert.ok(card.includes('target="_blank"'));}
+for(const card of fullCards){assert.ok(card.includes('class="app-version"'));assert.ok(card.includes('class="app-changed"'));assert.ok(card.includes('data-repo='));assert.ok(card.includes('Integrierter Quellstand'));}
+assert.ok(!html.includes('src/app-version-live.js'));
 assert.ok(!html.includes('class="app-change-line"'));
 assert.ok(fullCards.every(card=>card.includes('class="maker-icon maker-monogram"')));
 console.log('Compact manufacturer cards, versions, maturity status and navigation passed');

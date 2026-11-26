@@ -1,0 +1,42 @@
+name: Build and validate integrated Studio
+on:
+  push:
+    branches: ['studio/shared-ui-build']
+    paths-ignore: ['modules/**', 'packages/ui/styles/**', 'index.html', '**/*.html']
+permissions:
+  contents: write
+jobs:
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: studio/shared-ui-build
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Build pinned snapshots
+        run: |
+          node scripts/build-modules.mjs
+          node scripts/build-launcher.mjs
+          node scripts/build-docs.mjs
+      - name: Existing and shared unit tests
+        run: |
+          for f in tests/*.test.mjs; do node "$f" || exit 1; done
+      - name: Install browser
+        run: |
+          npm install --no-save --package-lock=false playwright@1.52.0
+          npx playwright install --with-deps chromium
+      - name: Shared UI browser checks
+        run: |
+          python3 -m http.server 8000 >/tmp/studio-http.log 2>&1 &
+          node tests/shared-ui-browser.mjs
+      - name: Commit validated snapshots to integration branch
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add modules packages/ui/styles index.html README.html CHANGELOG.html docs
+          git diff --cached --quiet || git commit -m "Build and validate pinned Studio modules"
+          git push origin HEAD:studio/shared-ui-build
