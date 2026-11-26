@@ -35,6 +35,24 @@ try{
  assert.equal(await workspace.locator('#studioSSC').inputValue(),'zsc31014');
  assert.equal(await workspace.locator('#studioBoard').inputValue(),'renesas');
  await workspace.locator('#studioCancel').click();
+ const sample={schema:1,type:'calibration',model:'zsc31014',created:'2026-11-26T13:40:07Z',status:'completed',completed:true,a:{bridge:1638,ref:10,count:4},b:{bridge:14745,ref:90,count:4},verification:{count:2,checks:[{pass:true,error:.02,tolerance:.2},{pass:true,error:-.01,tolerance:.2}]}};
+ const old={schema:1,model:'zsc31014',created:'2026-11-25T13:40:07Z',mode:'offline',points:[{raw:0,reference:0},{raw:100,reference:100}]};
+ await workspace.evaluate(data=>localStorage.setItem('renesas-archive',JSON.stringify(data)),[sample,old]);
+ await workspace.locator('[data-task="archive"]').click();
+ await workspace.locator('#archiveList .ra-record').first().waitFor({state:'visible'});
+ assert.equal(await workspace.locator('#archiveList .ra-record').count(),2);
+ await workspace.locator('#raSource').selectOption('Hardware');
+ assert.equal(await workspace.locator('#archiveList .ra-record').count(),1);
+ assert.match(await workspace.locator('#archiveList .ra-record').textContent(),/Hardware.*Abgeschlossen.*Bestanden/);
+ await workspace.locator('#archiveList .ra-record').getByRole('button',{name:'Öffnen'}).click();
+ assert.equal(await workspace.locator('#raDetail').isVisible(),true);
+ assert.equal(await workspace.locator('#raDetail .ra-chart').count(),2);
+ const exported=workspace.waitForEvent('download');
+ await workspace.locator('#raDetail').getByRole('button',{name:'CSV',exact:true}).click();
+ assert.match((await exported).suggestedFilename(),/zsc31014-calibration.*\.csv$/);
+ await workspace.locator('#raDetail').getByRole('button',{name:'Zurück zur Liste'}).click();
+ assert.deepEqual(await workspace.evaluate(()=>JSON.parse(localStorage.getItem('renesas-archive'))),[sample,old],'Existing archive data unchanged');
+ console.log('Renesas archive source, filter, details, charts and CSV export passed');
  assert.deepEqual(faults,[]);
  await workspace.close();
 
