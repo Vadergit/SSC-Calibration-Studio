@@ -120,3 +120,7 @@ Journal-Schreibvorgänge werden gebündelt; der vollständige Archivexport enth�
 ## v0.7.30 – Verbindungsinformationen wie Elmos
 
 Aufgabenauswahl mit der Elmos-Infobox; USB und bestätigter SSC-Zugriff getrennt. Hardwareaufgaben im geführten Einstieg weisen ohne erkannten SSC auf die nötige Verbindung hin; Archiv, Sensorbrücken-Rechner, EEPROM-Dateiansicht und Nachmessungsplanung bleiben erreichbar. Klassische Offline-Berechnung bleibt verfügbar. Verbindung & Diagnose kann wieder geschlossen werden. Keine Treiber- oder EEPROM-Änderungen.
+
+## v0.7.31 – Sensorverlust und Neuinitialisierung
+
+ZSC31014-Liveüberwachung erkennt drei aufeinanderfolgende Lesefehler oder 1,5 s ohne frische Daten; USB-Kanalfehler werden separat erkannt. Elmos-Reconnect-Banner nutzt vorhandenes Master-CSS. Alte Schreibfreigaben werden aufgehoben, Messentwürfe bleiben erhalten. Manuelle Neuinitialisierung archiviert aktive Aufgaben vor einem möglichen Sensorwechsel; keine automatische EEPROM-Programmierung. Reale Ab-/Anstecktests ausstehend.
