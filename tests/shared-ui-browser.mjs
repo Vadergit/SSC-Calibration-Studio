@@ -2,6 +2,13 @@ import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 const browser=await chromium.launch({headless:true});
 try{
+ const launcher=await browser.newPage();
+ await launcher.goto('http://127.0.0.1:8000/');
+ const select=launcher.locator('#studio-model');
+ await select.waitFor({state:'visible'});
+ await select.selectOption('./modules/adi/index.html?model=max40109');
+ assert.equal(await launcher.locator('#studio-model-open').evaluate(el=>el.href),'http://127.0.0.1:8000/modules/adi/index.html?model=max40109');
+ await launcher.close();
  for(const id of ['elmos','renesas','novosense','ti','melexis','adi','jhm']){
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));

@@ -4,6 +4,7 @@ import {tmpdir} from 'node:os';
 import {join,relative,sep} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {patchStudioFile,integrateElmos,commonStyles} from './patch-studio-module.mjs';
+import {shareStyles} from './share-styles.mjs';
 const root=fileURLToPath(new URL('..',import.meta.url)),manifest=JSON.parse(await readFile(join(root,'modules-lock.json'),'utf8'));
 const tmp=await mkdtemp(join(tmpdir(),'ssc-studio-'));
 async function checkout(id,m){
@@ -24,6 +25,7 @@ try{
   await walk(out,async p=>{const path=relative(out,p).split(sep).join('/');if(id==='elmos'&&['index.html','app.js'].includes(path))return;if(!/\.(?:m?js|html)$/.test(path))return;const old=await readFile(p,'utf8'),next=patchStudioFile(id,path,old);if(old!==next)await writeFile(p,next)});
  }
  const styles=join(root,'packages','ui','styles');await mkdir(styles,{recursive:true});for(const file of commonStyles)await cp(join(tmp,'elmos',file),join(styles,file));
+ await shareStyles(root,stage);
  for(const id of Object.keys(manifest)){const out=join(root,'modules',id),backup=join(tmp,'previous-'+id);try{await rename(out,backup)}catch(e){if(e.code!=='ENOENT')throw e}try{await rename(join(stage,id),out)}catch(e){try{await rename(backup,out)}catch{}throw e}}
  console.log('Pinned modules packaged. Run UI tests before release.');
 }finally{await rm(tmp,{recursive:true,force:true})}

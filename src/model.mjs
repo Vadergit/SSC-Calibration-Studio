@@ -87,7 +87,11 @@ export const catalog = [
       },
       {
         "id": "nsa2860(x)",
-        "name": "NSA2860(X)"
+        "name": "NSA2860"
+      },
+      {
+        "id": "nsa2860x",
+        "name": "NSA2860X"
       },
       {
         "id": "nsc2860x",
@@ -148,6 +152,10 @@ export const catalog = [
     "name": "Analog Devices / Maxim",
     "models": [
       {
+        "id": "max40109",
+        "name": "MAX40109"
+      },
+      {
         "id": "max1454",
         "name": "MAX1454"
       }
@@ -158,12 +166,32 @@ export const catalog = [
     "name": "Jiuhao Microelectronics",
     "models": [
       {
-        "id": "jhm1101–1103",
-        "name": "JHM1101–1103"
+        "id": "jhm1101",
+        "name": "JHM1101"
       },
       {
-        "id": "jhm1200/1203",
-        "name": "JHM1200/1203"
+        "id": "jhm1102",
+        "name": "JHM1102"
+      },
+      {
+        "id": "jhm1103",
+        "name": "JHM1103"
+      },
+      {
+        "id": "jhm1102p",
+        "name": "JHM1102P"
+      },
+      {
+        "id": "jhm1130",
+        "name": "JHM1130"
+      },
+      {
+        "id": "jhm1200",
+        "name": "JHM1200"
+      },
+      {
+        "id": "jhm1203",
+        "name": "JHM1203"
       },
       {
         "id": "jhm140x",
@@ -172,6 +200,14 @@ export const catalog = [
       {
         "id": "jhm150x",
         "name": "JHM150X"
+      },
+      {
+        "id": "jhm2000",
+        "name": "JHM2000"
+      },
+      {
+        "id": "jhm2031c",
+        "name": "JHM2031C"
       },
       {
         "id": "jhm2102",
