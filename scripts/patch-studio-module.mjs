@@ -3,6 +3,12 @@ import {patchElmos,replaceOnce} from './patch-elmos.mjs';
 export const commonStyles=['guided.css','interface.css','theme.css','settings-refresh.css','verification-guide.css','classic-compact.css','eeprom-config-overview.css','nvm-reconstruction.css','calibration-graph.css','archive-photos.css'];
 const settings="const studioSettings=window.SSC_UI.installSettingsPanel({panel:$('settingsPanel'),trigger:$('settingsOpen')});";
 export function patchStudioFile(id,path,content){
+ const themes={"elmos":{"key":"elmos-ui-theme-v1","files":["index.html","app.js"]},"renesas":{"key":"renesas-theme","files":["index.html","app.mjs"]},"melexis":{"key":"mlx-theme","files":["index.html","app.mjs"]},"adi":{"key":"adi-theme","files":["index.html","app.mjs"]},"jhm":{"key":"jhm-theme","files":["index.html","app.mjs"]},"novosense":{"key":"novo-theme","files":["index.html","classic.html","guided.html","novosense.mjs"]},"ti":{"key":"ti-theme","files":["pga300.mjs"]}};
+ const theme=themes[id];
+ if(theme?.files.includes(path)){
+  if(!content.includes(theme.key))throw Error('Theme key missing: '+id+'/'+path);
+  content=content.split(theme.key).join('ssc-studio-theme-v1');
+ }
  // Identical generic reference fit is shared; native coefficient algorithms remain local.
  if(path==='calibration.mjs'&&['adi','jhm','melexis','novosense','ti'].includes(id)){
   const expected="export function fit(points) {\n  if (points.length < 2 || points.some(({raw, reference}) =>\n    !Number.isFinite(raw) || !Number.isFinite(reference))) {\n    throw new Error('Mindestens zwei vollständige, endliche Messpunkte sind erforderlich.');\n  }\n  const mean = key => points.reduce((sum, point) => sum + point[key], 0) / points.length;\n  const x = mean('raw');\n  const y = mean('reference');\n  const variance = points.reduce((sum, point) => sum + (point.raw - x) ** 2, 0);\n  if (!variance) throw new Error('Die Rohwerte müssen sich unterscheiden.');\n  if (!Number.isFinite(variance)) throw new Error(\"Die Rohwerte liegen ausserhalb des unterstützten Bereichs.\");\n  const gain = points.reduce((sum, point) =>\n    sum + (point.raw - x) * (point.reference - y), 0) / variance;\n  const offset = y - gain * x;\n  const residuals = points.map(({raw, reference}) => raw * gain + offset - reference);\n  if (![gain, offset, ...residuals].every(Number.isFinite)) {\n    throw new Error('Die Zahlen liegen ausserhalb des unterstützten Bereichs.');\n  }\n  return {gain, offset, residuals};\n}\n";

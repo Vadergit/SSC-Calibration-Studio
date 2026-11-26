@@ -3,7 +3,7 @@
 /* Apply user theme before the first paint to avoid a bright flash. */
 try {
  document.documentElement.dataset.theme =
-  localStorage.getItem('elmos-ui-theme-v1') === 'dark' ? 'dark' : 'light';
+  localStorage.getItem('ssc-studio-theme-v1') === 'dark' ? 'dark' : 'light';
 } catch (_) {
  document.documentElement.dataset.theme = 'light';
 }

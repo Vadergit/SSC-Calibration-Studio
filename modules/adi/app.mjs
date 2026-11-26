@@ -29,8 +29,8 @@ flow.slice(0,11).forEach((s,i)=>{let b=button('',()=>show(i));b.className='gw-si
 const routes={calibration:1,alarms:8,output:7,nvm:3,inspect:11,testlog:12,verification:6,archive:13};
 document.querySelectorAll('[data-task]').forEach(b=>b.onclick=()=>{returnPage=0;show(routes[b.dataset.task])});
 $('prev').onclick=()=>show(page>10?returnPage:page-1);$('next').onclick=()=>{if(page===2){$('plan').click();return;}if(page===4){$('fit').click();return;}show(page+1)};
-try{document.documentElement.dataset.theme=localStorage.getItem('adi-theme')||'light'}catch{}
-$('theme').onclick=()=>{let t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('adi-theme',t)}catch{}};
+try{document.documentElement.dataset.theme=localStorage.getItem('ssc-studio-theme-v1')||'light'}catch{}
+$('theme').onclick=()=>{let t=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=t;try{localStorage.setItem('ssc-studio-theme-v1',t)}catch{}};
 models.forEach(m=>$('model').add(new Option(m.name,m.id)));const requested=new URLSearchParams(location.search).get('model');$('model').value=models.some(m=>m.id===requested)?requested:'max40109';
 pga.forEach(g=>$('pga').add(new Option(g,g)));$('pga').value='72';
 function model(){return models.find(m=>m.id===$('model').value)}
@@ -77,7 +77,7 @@ document.querySelectorAll('[data-preset]').forEach(b=>b.addEventListener('click'
 $('guidedHomeTop').onclick=()=>show(0);$('connectionToggle').onclick=()=>{returnPage=page;show(11)};$('alarmDiag').onclick=()=>{returnPage=8;show(11)};$('finishArchive').onclick=()=>{returnPage=10;show(13)};
 function setView(v){document.documentElement.classList.toggle('adi-classic',v==='classic');$('viewSelect').value=v;txt('view',v==='classic'?'◇ Geführt':'◇ Klassisch');try{localStorage.setItem('adi-view',v)}catch{}}
 $('view').onclick=()=>setView($('viewSelect').value==='classic'?'guided':'classic');$('viewSelect').onchange=()=>setView($('viewSelect').value);
-window.SSC_UI.installSettingsPanel({panel:$('settingsDialog'),trigger:$('settingsOpen'),closeButton:$('settingsClose'),onOpen:()=>{$('themeSelect').value=document.documentElement.dataset.theme||'light'}});$('themeSelect').onchange=()=>{document.documentElement.dataset.theme=$('themeSelect').value;try{localStorage.setItem('adi-theme',$('themeSelect').value)}catch{}};
+window.SSC_UI.installSettingsPanel({panel:$('settingsDialog'),trigger:$('settingsOpen'),closeButton:$('settingsClose'),onOpen:()=>{$('themeSelect').value=document.documentElement.dataset.theme||'light'}});$('themeSelect').onchange=()=>{document.documentElement.dataset.theme=$('themeSelect').value;try{localStorage.setItem('ssc-studio-theme-v1',$('themeSelect').value)}catch{}};
 $('theme').addEventListener('click',()=>$('themeSelect').value=document.documentElement.dataset.theme);
 try{setView(localStorage.getItem('adi-view')==='classic'?'classic':'guided')}catch{setView('guided')}
 let historyP=[];

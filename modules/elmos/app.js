@@ -5820,7 +5820,7 @@ if(typeof document!=='undefined') (function UI(){
  themeControl.addEventListener('change',()=>{
   const selected=themeControl.value==='dark'?'dark':'light';
   document.documentElement.dataset.theme=selected;
-  try{localStorage.setItem('elmos-ui-theme-v1',selected)}catch(_){}
+  try{localStorage.setItem('ssc-studio-theme-v1',selected)}catch(_){}
   draw(); // Repaint ADC chart axes/trace for the chosen palette.
   $('settingsMsg').textContent=selected==='dark'?
    'Darkmode aktiviert. Die Auswahl bleibt lokal gespeichert.':

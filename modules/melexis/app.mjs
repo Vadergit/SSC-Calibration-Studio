@@ -22,8 +22,8 @@ const targets={calibration:1,alarms:9,output:8,nvm:4,inspect:10,testlog:12,verif
 function setView(v){mode=v;document.body.dataset.view=v;document.documentElement.classList.toggle('guided-active',v==='guided');$('viewMode').value=v;$('viewToggle').textContent=v==='guided'?'◇ Klassisch':'◇ Geführt';try{localStorage.setItem('mlx-view',v)}catch{}show(current)}
 $('viewToggle').onclick=()=>setView(mode==='guided'?'classic':'guided');$('viewMode').onchange=()=>setView($('viewMode').value);
 const studioSettings=window.SSC_UI.installSettingsPanel({panel:$('settingsPanel'),trigger:$('settingsOpen')});
-function theme(){try{document.documentElement.dataset.theme=localStorage.getItem('mlx-theme')||'light'}catch{document.documentElement.dataset.theme='light'};$('settingsTheme').value=document.documentElement.dataset.theme;draw();drawAFE();drawLog()}
-$('settingsTheme').onchange=()=>{try{localStorage.setItem('mlx-theme',$('settingsTheme').value);theme()}catch{document.documentElement.dataset.theme=$('settingsTheme').value;draw();drawAFE();drawLog()}};
+function theme(){try{document.documentElement.dataset.theme=localStorage.getItem('ssc-studio-theme-v1')||'light'}catch{document.documentElement.dataset.theme='light'};$('settingsTheme').value=document.documentElement.dataset.theme;draw();drawAFE();drawLog()}
+$('settingsTheme').onchange=()=>{try{localStorage.setItem('ssc-studio-theme-v1',$('settingsTheme').value);theme()}catch{document.documentElement.dataset.theme=$('settingsTheme').value;draw();drawAFE();drawLog()}};
 $('expertMode').onchange=()=>document.body.classList.toggle('expert', $('expertMode').checked);
 $('tooltips').onchange=()=>document.body.classList.toggle('no-tooltips',!$('tooltips').checked);
 document.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{$('np').value=b.dataset.p;$('nt').value=b.dataset.t;refreshTemps();matrix();document.querySelectorAll('[data-p]').forEach(x=>x.setAttribute('aria-pressed',String(x===b)))});

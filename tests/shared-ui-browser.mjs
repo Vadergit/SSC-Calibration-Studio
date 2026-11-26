@@ -4,6 +4,7 @@ const browser=await chromium.launch({headless:true});
 try{
  const launcher=await browser.newPage();
  await launcher.goto('http://127.0.0.1:8000/');
+ await launcher.evaluate(()=>localStorage.setItem('ssc-studio-theme-v1','dark'));
  const select=launcher.locator('#studio-model');
  await select.waitFor({state:'visible'});
  await select.selectOption('./modules/adi/index.html?model=max40109');
@@ -12,11 +13,12 @@ try{
  for(const id of ['elmos','renesas','novosense','ti','melexis','adi','jhm']){
   const page=await browser.newPage({viewport:{width:1440,height:900}});
   const errors=[];page.on('pageerror',e=>errors.push(e.message));
-  await page.addInitScript(()=>{Object.defineProperty(navigator,'serial',{configurable:true,value:{requestPort:async()=>{throw new DOMException('Cancelled','NotFoundError')},getPorts:async()=>[],addEventListener:()=>{},removeEventListener:()=>{}}})});
+  await page.addInitScript(()=>{localStorage.setItem('ssc-studio-theme-v1','dark');Object.defineProperty(navigator,'serial',{configurable:true,value:{requestPort:async()=>{throw new DOMException('Cancelled','NotFoundError')},getPorts:async()=>[],addEventListener:()=>{},removeEventListener:()=>{}}})});
   await page.goto('http://127.0.0.1:8000/modules/'+id+'/index.html',{waitUntil:'domcontentloaded'});
   const gear=page.locator(id==='renesas'?'#settings':'#settingsOpen');
   const panel=page.locator(id==='adi'?'#settingsDialog':'#settingsPanel');
   await gear.waitFor({state:'visible',timeout:20000});
+  await page.waitForFunction(()=>document.documentElement.dataset.theme==='dark');
   await gear.click();assert.ok(await panel.isVisible(),id+' open');
   assert.equal(await gear.getAttribute('aria-expanded'),'true',id);
   await panel.evaluate(el=>el.click());assert.ok(await panel.isVisible(),id+' inside click');

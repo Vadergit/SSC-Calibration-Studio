@@ -9,8 +9,8 @@ const requested=new URLSearchParams(location.search).get('model');if([...model.o
 if(aliases[requested]){$('legacyNotice').hidden=false;$('legacyNotice').textContent='Alter Gruppenlink: bitte den genauen SSC auswählen.';}
 const profile=()=>catalog[0].models.find(p=>p.id===model.value);
 function modelInfo(){ const p=profile();$('selectedModel').textContent=p.name;$('modelStatus').textContent=p.name+' · '+({bridge:'Widerstandsbrücke',capacitive:'Kapazitiver Sensor',unknown:'Sensortyp noch zu bestätigen'}[p.kind])+' · Speicher: '+p.memory+' · kein Hardwarezugriff.';$('bridgeFields').hidden=p.kind!=='bridge';$('memoryNotice').textContent=p.memory==='OTP'?'OTP-Speicher: einmalige Programmierung, kein generischer EEPROM-Schreibpfad.':'Speichertyp und Programmierfolge noch zu bestätigen.';bridge();const u=new URL(location.href);u.searchParams.set('model',model.value);history.replaceState(null,'',u);}
-function theme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('jhm-theme',t)}catch{}}
-try{theme(localStorage.getItem('jhm-theme')||'light')}catch{}
+function theme(t){document.documentElement.dataset.theme=t;try{localStorage.setItem('ssc-studio-theme-v1',t)}catch{}}
+try{theme(localStorage.getItem('ssc-studio-theme-v1')||'light')}catch{}
 $('theme').value=document.documentElement.dataset.theme||'light';$('theme').onchange=()=>theme($('theme').value);
 function config(){const lo=n('lo'),hi=n('hi'),p0=n('p0'),p1=n('p1'),tol=n('tol');if(![lo,hi,p0,p1,tol].every(Number.isFinite)||hi<=lo||p0<0||p1>100||p1<=p0||tol<0)throw Error('Messbereich, Kalibriergrenzen und Toleranz prüfen.');const temperatures=Array.from({length:Number($('tempCount').value)},(_,i)=>n('t'+i));if(!temperatures.every(Number.isFinite)||temperatures.some((t,i)=>i>0&&t-temperatures[i-1]<1))throw Error('Temperaturstufen aufsteigend mit mindestens 1 °C Abstand eingeben.');return{lo,hi,p0,p1,tol,unit:$('unit').value,count:Number($('plan').value),temperatures}}
 function row(tbody,values){const tr=tbody.insertRow();for(const v of values){const td=tr.insertCell();if(v instanceof HTMLElement)td.append(v);else td.textContent=v}return tr}
