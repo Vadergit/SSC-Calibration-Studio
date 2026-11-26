@@ -9,9 +9,9 @@ export const appVersions = {
   },
   "renesas": {
     "repo": "Renesas-IDT-SSC-Calibration-Web-App",
-    "version": "0.7.23",
-    "date": "2026-11-26T13:36:50Z",
-    "sha": "83fe02a7f16f1e6ae273040886e6bdec013e69ae",
+    "version": "0.7.24",
+    "date": "2026-11-26T13:42:14Z",
+    "sha": "5007c121880b6e1c00f0c4c6c260e622b0e3153f",
     "path": "app.mjs",
     "kind": "renesas"
   },

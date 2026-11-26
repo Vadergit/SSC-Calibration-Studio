@@ -1,0 +1,13 @@
+import assert from 'node:assert/strict';
+import {archiveSource,archiveStatus,archiveVerdict,archiveFilter,archiveCSV,mergeArchive,archivePoints} from '../modules/renesas/archive-core.mjs';
+const r={schema:1,type:'calibration',model:'zsc31014',created:'2026-11-26T13:40:07Z',status:'completed',completed:true,a:{bridge:1638,ref:10,count:4},b:{bridge:14745,ref:90,count:4},verification:{count:2,checks:[{pass:true,error:.02,tolerance:.2},{pass:true,error:-.01,tolerance:.2}]}};
+assert.equal(archiveSource(r),'Hardware');assert.equal(archiveStatus(r),'Abgeschlossen');assert.equal(archiveVerdict(r),'Bestanden');assert.equal(archivePoints(r).length,2);
+assert.equal(archiveSource({...r,completed:false,a:null,b:null,mode:'offline'}),'Offline');
+assert.equal(archiveVerdict({...r,verification:{count:3,checks:r.verification.checks}}),'Unvollständig / nicht bewertet');
+assert.equal(archiveVerdict({...r,verification:{count:1,checks:[{pass:false}]}}),'Nicht bestanden');
+assert.equal(archiveFilter([r],{query:'31014',type:'calibration',source:'Hardware'}).length,1);
+assert.equal(archiveFilter([r],{source:'Offline'}).length,0);
+assert.deepEqual(mergeArchive([r],[r]),[r]);assert.throws(()=>mergeArchive([r],[{model:'bad'}]));
+assert.ok(archiveCSV(r).includes('1638'));assert.ok(archiveCSV(r).includes('Nachmessung'));
+assert.ok(archiveCSV({...r,a:{ref:'=SUM(1,2)'}}).includes("'=SUM"));
+console.log('Archive legacy classification, filtering, CSV and import checks passed');

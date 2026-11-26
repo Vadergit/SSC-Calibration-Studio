@@ -136,6 +136,6 @@ function z15Plan(){return plan31015($('z15Mode').value,{low:$('z15Low').valueAsN
  function clearCalibrationDraft(){z15Step=0;z14Mode='linear';z14Multi=[];z14Log=[];z14Plan=null;z14PlanKind=null;z14Fit=null;z14A=null;z14B=null;z14Completed=null;$('z14Plan').textContent='—';$('z14Points').textContent='—';update()}
  function stopNativeRecording(){z14StopRequested=true}
  function recordingDraft(){return z14Log.slice()}
- function calibrationDraft(){if(model()==='zsc31015')return {mode:$('z15Mode').value,points:z15Points.slice(),fit:z15Fit,completed:false};return {a:z14A||z14Completed?.a,b:z14B||z14Completed?.b,fit:z14Fit||z14Completed?.fit,completed:!!z14Completed,mode:z14Mode,points:z14Completed?.points||z14Multi.slice()}}
+ function calibrationDraft(){if(model()==='zsc31015')return {mode:$('z15Mode').value,points:z15Points.slice(),fit:z15Fit,completed:false};return {a:z14A||z14Completed?.a,b:z14B||z14Completed?.b,fit:z14Fit||z14Completed?.fit,completed:!!z14Completed,mode:z14Mode,adapter,hardwareWritten:!!z14Completed,memory:{original:z14Original?.slice()??null,current:z14Current?.slice()??null},points:z14Completed?.points||z14Multi.slice()}}
  return {open,disconnect,reconnect,state,update,invalidate,setCalibrationMode,rawCapture,outputCapture,setLiveLog,exportOriginalBackup,applyAfe14,navigationState,clearCalibrationDraft,stopNativeRecording,calibrationDraft,recordingDraft};
 }

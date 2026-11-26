@@ -90,3 +90,7 @@ Removed obsolete toVerify binding and restored offline verificationExport contro
 ## v0.7.23 – schnellere ZSC31014-Live-Anzeige
 
 Separate persistente Live-Intervallwahl (50/100/200/350/500/1000 ms, Standard 100 ms). Die tatsächliche Polling-Rate berücksichtigt das im bestätigten EEPROM eingestellte Update_Rate-Feld (Datenblatt Tabellen 3.2/3.3; konservative 1-MHz-Grenzen). Live-Abfragen lesen nur einmal; Status 2 wird nicht als neuer Wert angezeigt und blockiert keine AFE-Änderung mehr mit Wiederholungsschleifen. Explizite Messpunktaufnahmen behalten die strenge Frischeprüfung. EEPROM-Schreibfolge, Backup, vollständige Vorprüfung und doppelte Rücklesung bleiben unverändert. Die tatsächliche USB/SSC-Rate und AFE-Übernahmedauer sind am Prüfplatz zu messen.
+
+## v0.7.24 – Kalibrierarchiv
+
+Filter und Suche, Protokoll-Detailansicht, Messkurven, CSV/JSON, druckbares PDF sowie gesamtes Archiv sichern und JSON importieren. Bestehende Browserdaten bleiben unverändert; keine pauschale Offline-Beschriftung und kein automatisches Löschen älterer Datensätze. Bei fehlender Herkunft oder fehlenden Prüfdaten wird dies ausdrücklich angezeigt. Neue native Kalibrierprotokolle enthalten Adapter und verfügbare EEPROM-Abbilder. Kein direkter Ordnerzugriff, keine Fotoablage und kein gemeinsames herstellerübergreifendes Archiv in diesem Stand.
